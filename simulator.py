@@ -24,7 +24,7 @@ class Simulator:
 
     def visualize_waveform(self, voltage: NDArray[float64], *,
         title: str = "Signal Waveform",
-        peak_indices: Optional[list[int]] = None, valley_indices: Optional[list[int]] = None,
+        max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None,
         ax: Optional[plt.Axes] = None) -> None:
         """Generates a standardized Voltage vs. Time graph for oscilloscope data
 
@@ -32,10 +32,10 @@ class Simulator:
         :type voltage: NDArray[float64]
         :param title: The title text displayed at the top of the plot
         :type title: str, optional
-        :param peak_indices: A list of array indices corresponding to localized peak maximums tracked by the segmented sweep algorithm
-        :type peak_indices: list[int], optional
-        :param valley_indices: A list of array indices corresponding to localized valley minimums tracked by the segmented sweep algorithm
-        :type valley_indices: list[int], optional
+        :param max_indices: A list of array indices corresponding to localized peak maximums tracked by the segmented sweep algorithm
+        :type max_indices: list[int], optional
+        :param min_indices: A list of array indices corresponding to localized valley minimums tracked by the segmented sweep algorithm
+        :type min_indices: list[int], optional
         :param ax: An existing Matplotlib Axes object to plot onto. If None, a new figure and axes context will be created and displayed immediately
         :type ax: plt.Axes, optional
 
@@ -54,11 +54,11 @@ class Simulator:
 
 
         # Plot optional peak/trough markers
-        if peak_indices is not None and len(peak_indices) > 0:
-            ax.scatter(self.time[peak_indices], voltage[peak_indices], 
+        if max_indices is not None and len(max_indices) > 0:
+            ax.scatter(self.time[max_indices], voltage[max_indices], 
                     color="red", marker="v", s=40, zorder=5, label="Tracked Peaks")
-        if valley_indices is not None and len(valley_indices) > 0:
-            ax.scatter(self.time[valley_indices], voltage[valley_indices], 
+        if min_indices is not None and len(min_indices) > 0:
+            ax.scatter(self.time[min_indices], voltage[min_indices], 
                     color="blue", marker="^", s=40, zorder=5, label="Tracked Valleys")
 
         # Chart display settings
@@ -193,7 +193,3 @@ class Simulator:
         
         noisy_signal = self._add_noise(signal, SNR)
         return noisy_signal
-
-sim = Simulator(np.linspace(0, 10e-3, 10000))
-signal = sim.noisy_modulated_sine(SNR=40)
-sim.visualize_waveform(signal)
