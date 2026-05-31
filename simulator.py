@@ -1,0 +1,199 @@
+import numpy as np
+from numpy import float64
+from numpy.typing import NDArray
+from typing import Optional
+import matplotlib.pyplot as plt
+import numpy as np
+import numpy.typing as npt
+
+"""
+Collection of test signals to test the data analyzer with. Reference signal to check how well-adjusted the analyzer parameters are
+"""
+
+class Simulator:
+    """Class for simulating signal waveforms to use as a reference to calibrate the analyzer
+
+    :param time: An array representing the time axis, typically measured in seconds (s)
+    :type time: NDArray[float64]
+    """
+
+    time: NDArray[float64]
+
+    def __init__(self, time):
+        self.time = time
+
+    def visualize_waveform(self, voltage: NDArray[float64], *,
+        title: str = "Signal Waveform",
+        peak_indices: Optional[list[int]] = None, valley_indices: Optional[list[int]] = None,
+        ax: Optional[plt.Axes] = None) -> None:
+        """Generates a standardized Voltage vs. Time graph for oscilloscope data
+
+        :param voltage: An array representing the captured voltage values, measured in Volts (V)
+        :type voltage: NDArray[float64]
+        :param title: The title text displayed at the top of the plot
+        :type title: str, optional
+        :param peak_indices: A list of array indices corresponding to localized peak maximums tracked by the segmented sweep algorithm
+        :type peak_indices: list[int], optional
+        :param valley_indices: A list of array indices corresponding to localized valley minimums tracked by the segmented sweep algorithm
+        :type valley_indices: list[int], optional
+        :param ax: An existing Matplotlib Axes object to plot onto. If None, a new figure and axes context will be created and displayed immediately
+        :type ax: plt.Axes, optional
+
+        :return: None
+        :rtype: None
+        """
+        # Creates axes
+        if ax == None:
+            fig, ax = plt.subplots(figsize=(10, 5))
+            show_plot = True
+        else:
+            show_plot = False
+
+        # Plot signal
+        ax.plot(self.time, voltage, label="Raw Signal", color="gray", alpha=0.6, linewidth=1)
+
+
+        # Plot optional peak/trough markers
+        if peak_indices is not None and len(peak_indices) > 0:
+            ax.scatter(self.time[peak_indices], voltage[peak_indices], 
+                    color="red", marker="v", s=40, zorder=5, label="Tracked Peaks")
+        if valley_indices is not None and len(valley_indices) > 0:
+            ax.scatter(self.time[valley_indices], voltage[valley_indices], 
+                    color="blue", marker="^", s=40, zorder=5, label="Tracked Valleys")
+
+        # Chart display settings
+        ax.set_title(title, fontsize=12, fontweight="bold")
+        ax.set_xlabel("Time (s)", fontsize=10)
+        ax.set_ylabel("Voltage (V)", fontsize=10)
+        ax.grid(True, linestyle=":", alpha=0.6)
+        ax.legend(loc="upper right", framealpha=0.9)
+
+        if show_plot:
+            plt.tight_layout()
+            plt.show()
+
+    def _add_noise(self, signal: NDArray[float64], SNR: float) -> NDArray[float64]:
+        """Adds Additive White Gaussian Noise (AWGN) to the input signal
+
+        :param signal: An array representing the signal waveform, measured in Volts (V)
+        :type signal: NDArray[float64]
+        :param SNR: signal-to-noise ratio of the signal. Defines the intensity of Gaussian Noise. Measured in decibels (dB)
+        :type SNR: float
+
+        :return: the original inputted signal, with the added AWGN
+        :rtype: NDArray[np.float64]
+        """
+
+        # Calculating noise distribution
+        signal_power = np.mean(signal ** 2)
+        SNR_linear = 10 ** (SNR / 10)
+        noise_power = signal_power / SNR_linear
+        noise_rms = np.sqrt(noise_power)
+        noise = np.random.normal(0, noise_rms, len(signal))
+
+        return signal + noise
+
+
+    def noisy_sine(self, *, Vpp: float, T: float, t_offset: float = 0, SNR: float) -> NDArray[float64]:
+        """Sinusoidal signal with Additive White Gaussian Noise (AWGN) at the specified SNR. Default signal is a cosine wave with its troughs at zero
+
+        :param Vpp: peak-to-peak voltage of the signal waveform in Volts (V)
+        :type Vpp: float
+        :param T: period of the signal waveform in seconds (s)
+        :type T: float
+        :param t_offset: time phase offset of the waveform. Positive offset moves the signal to the right. Negative offset moves the signal to the left.
+            Measured in seconds (s). No offset by default
+        :type t_offset: float
+        :param SNR: signal-to-noise ratio of the signal. Defines the intensity of Gaussian Noise. Measured in decibels (dB)
+        :type SNR: float
+
+        :return: an array of voltage values corresponding to the signal waveform
+        :rtype: NDArray[np.float64]
+        """
+        signal = (Vpp / 2) * (1 + np.cos((2 * np.pi / T) * (self.time - t_offset)))
+        return self._add_noise(signal, SNR)
+
+    def modulated_sine(self, *, Vpp: float = 0.26, phase_mod_cycles: float = 2.9, phase_mod_frequency: float = 150,
+                       fiber_length: float = 0.3, wavelength: float = 1550e-9, chi2: float = 0.0168e-12,
+                       core_index: float = 1.52, ac_voltage: float = 1200, eff_distance: float = 33e-6,
+                       ac_frequency: float = 5000, t_offset: float = 0) -> NDArray[float64]:
+        """Modulated sinusoidal signal generated by the interferometer during the chi-2 measurement experiment.
+        
+        :param Vpp: peak-to-peak voltage of the signal waveform in Volts (V)
+        :type Vpp: float
+        :param phase_mod_cycles: The amount of 2pi phase cycles the piezo phase modulator moves through in one input signal cycle
+        :type phase_mod_cycles: float
+        :param phase_mod_frequency: Frequency of the input signal that drives the phase modulator, in Hertz (Hz)
+        :type phase_mod_frequency: float
+        :param fiber_length: Length of the overlap between the electrodes. Approximately the length of the optical fiber. Measured in metres (m)
+        :type fiber_length: float
+        :param wavelength: Wavelength of the light used in the interferometer, measured in metres (m)
+        :type wavelength: float
+        :param chi2: The second-order nonlinear susceptibility of the PPSF, measured in metres per Volt (m/V)
+        :type chi2: float
+        :param core_index: The refractive index of the fiber core
+        :type core_index: float
+        :param ac_voltage: The peak-to-peak AC voltage used to probe the PPSF, measured in Volts (V)
+        :type ac_voltage: float
+        :param eff_distance: The shortest distance between the electrodes, measured in metres (m)
+        :type eff_distance: float
+        :param ac_frequency: The frequency of the AC voltage used to probe the PPSF, measured in Hertz (Hz)
+        :type ac_frequency: float
+        :param t_offset: time phase offset of the waveform. Positive offset moves the signal to the right. Negative offset moves the signal to the left.
+        Measured in seconds (s). No offset by default
+        :type t_offset: float
+
+        :return: An array representing the output signal waveform
+        :rtype: NDArray[float64]
+        """
+
+        phase_change = ((2 * np.pi * fiber_length * chi2 * ac_voltage) / (wavelength * core_index * eff_distance)) * np.cos(2 * np.pi * ac_frequency * (self.time - t_offset))
+
+        signal = (Vpp / 2) * (1 + np.cos((2 * np.pi * phase_mod_cycles * phase_mod_frequency * (self.time - t_offset)) - (phase_change / 2)))
+        return signal
+    
+    def noisy_modulated_sine(self, *, Vpp: float = 0.26, phase_mod_cycles: float = 2.9, phase_mod_frequency: float = 150,
+                       fiber_length: float = 0.3, wavelength: float = 1550e-9, chi2: float = 0.0168e-12,
+                       core_index: float = 1.52, ac_voltage: float = 1200, eff_distance: float = 33e-6,
+                       ac_frequency: float = 5000, t_offset: float = 0, SNR: float) -> NDArray[float64]:
+        """Modulated sinusoidal signal generated by the interferometer during the chi-2 measurement experiment.
+        
+        :param Vpp: peak-to-peak voltage of the signal waveform in Volts (V)
+        :type Vpp: float
+        :param phase_mod_cycles: The amount of 2pi phase cycles the piezo phase modulator moves through in one input signal cycle
+        :type phase_mod_cycles: float
+        :param phase_mod_frequency: Frequency of the input signal that drives the phase modulator, in Hertz (Hz)
+        :type phase_mod_frequency: float
+        :param fiber_length: Length of the overlap between the electrodes. Approximately the length of the optical fiber. Measured in metres (m)
+        :type fiber_length: float
+        :param wavelength: Wavelength of the light used in the interferometer, measured in metres (m)
+        :type wavelength: float
+        :param chi2: The second-order nonlinear susceptibility of the PPSF, measured in metres per Volt (m/V)
+        :type chi2: float
+        :param core_index: The refractive index of the fiber core
+        :type core_index: float
+        :param ac_voltage: The peak-to-peak AC voltage used to probe the PPSF, measured in Volts (V)
+        :type ac_voltage: float
+        :param eff_distance: The shortest distance between the electrodes, measured in metres (m)
+        :type eff_distance: float
+        :param ac_frequency: The frequency of the AC voltage used to probe the PPSF, measured in Hertz (Hz)
+        :type ac_frequency: float
+        :param t_offset: time phase offset of the waveform. Positive offset moves the signal to the right. Negative offset moves the signal to the left.
+        Measured in seconds (s). No offset by default
+        :type t_offset: float
+        :param SNR: signal-to-noise ratio of the signal. Defines the intensity of Gaussian Noise. Measured in decibels (dB)
+        :type SNR: float
+
+        :return: An array representing the output signal waveform
+        :rtype: NDArray[float64]
+        """
+        signal = self.modulated_sine(Vpp=Vpp, phase_mod_cycles=phase_mod_cycles, phase_mod_frequency=phase_mod_frequency,
+                                     fiber_length=fiber_length, wavelength=wavelength, chi2=chi2, core_index=core_index,
+                                     ac_voltage=ac_voltage, eff_distance=eff_distance, ac_frequency=ac_frequency, t_offset=t_offset)
+        
+        noisy_signal = self._add_noise(signal, SNR)
+        return noisy_signal
+
+sim = Simulator(np.linspace(0, 10e-3, 10000))
+signal = sim.noisy_modulated_sine(SNR=40)
+sim.visualize_waveform(signal)
