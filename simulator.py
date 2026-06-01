@@ -24,7 +24,7 @@ class Simulator:
 
     def visualize_waveform(self, voltage: NDArray[float64], *,
         title: str = "Signal Waveform",
-        max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None,
+        max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None, mid_indices: Optional[list[int]] = None,
         ax: Optional[plt.Axes] = None) -> None:
         """Generates a standardized Voltage vs. Time graph for oscilloscope data
 
@@ -32,10 +32,12 @@ class Simulator:
         :type voltage: NDArray[float64]
         :param title: The title text displayed at the top of the plot
         :type title: str, optional
-        :param max_indices: A list of array indices corresponding to localized peak maximums tracked by the segmented sweep algorithm
+        :param max_indices: A list of array indices corresponding to localized maximums tracked by the segmented sweep algorithm
         :type max_indices: list[int], optional
-        :param min_indices: A list of array indices corresponding to localized valley minimums tracked by the segmented sweep algorithm
+        :param min_indices: A list of array indices corresponding to localized minimums tracked by the segmented sweep algorithm
         :type min_indices: list[int], optional
+        :param mid_indices: A list of array indices corresponding to midway between the maxes and mins
+        :type mid_indices: list[int], optional 
         :param ax: An existing Matplotlib Axes object to plot onto. If None, a new figure and axes context will be created and displayed immediately
         :type ax: plt.Axes, optional
 
@@ -56,10 +58,15 @@ class Simulator:
         # Plot optional peak/trough markers
         if max_indices is not None and len(max_indices) > 0:
             ax.scatter(self.time[max_indices], voltage[max_indices], 
-                    color="red", marker="v", s=40, zorder=5, label="Tracked Peaks")
+                    color="red", marker="v", s=40, zorder=5, label="Dominant Maxima")
         if min_indices is not None and len(min_indices) > 0:
             ax.scatter(self.time[min_indices], voltage[min_indices], 
-                    color="blue", marker="^", s=40, zorder=5, label="Tracked Valleys")
+                    color="blue", marker="^", s=40, zorder=5, label="Dominant Minima")
+        if mid_indices is not None and len(mid_indices) > 0:
+            ax.scatter(self.time[mid_indices], voltage[mid_indices], 
+                    color="green", marker="o", s=40, zorder=5, label="Max Phase Change")
+        
+        # calculate ideal markers
 
         # Chart display settings
         ax.set_title(title, fontsize=12, fontweight="bold")

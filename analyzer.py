@@ -26,8 +26,8 @@ class Analyzer:
     :type phase_mod_cycles: float
     """
     
-    time: float
-    voltage: float
+    time: NDArray[float64]
+    voltage: NDArray[float64]
     core_index: float
     wavelength: float
     eff_distance: float
@@ -194,18 +194,31 @@ class Analyzer:
         max_index_num = 0
         min_index_num = 0
         phase_change_index_array = []
-        # if max_index_array[0] < min_index_array[0]:
-        #     while (max_index_num == num_max or min_index_num == num_min):
-                
-        # else:
+        if max_index_array[0] < min_index_array[0]:
+            while max_index_num != num_max and min_index_num != num_min:
+                phase_change_index_array.append(int((max_index_array[max_index_num] + min_index_array[min_index_num])/2))
+
+                if (max_index_num + min_index_num) % 2 == 0:
+                    max_index_num += 1
+                else:
+                    min_index_num += 1
+
+        else:
+            while max_index_num != num_max and min_index_num != num_min:
+                phase_change_index_array.append(int((max_index_array[max_index_num] + min_index_array[min_index_num])/2))
+
+                if (max_index_num + min_index_num) % 2 == 0:
+                    min_index_num += 1
+                else:
+                    max_index_num += 1
         
-        return max_index_array, min_index_array
+        return max_index_array, min_index_array, phase_change_index_array
 
 
 time = np.linspace(0, 10e-3, 1_000_000)
 sim = Simulator(time)
-signal = sim.noisy_modulated_sine(SNR=40)
+signal = sim.noisy_modulated_sine(SNR=45)
 analyzer = Analyzer(time, signal)
-max_indices, min_indices = analyzer.analyze(max_min_epsilon_factor=50)
-sim.visualize_waveform(signal, max_indices=max_indices, min_indices=min_indices)
+max_index_array, min_index_array, phase_change_index_array = analyzer.analyze(max_min_epsilon_factor=4)
+sim.visualize_waveform(signal, max_indices=max_index_array, min_indices=min_index_array, mid_indices=phase_change_index_array)
         
