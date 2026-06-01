@@ -228,9 +228,7 @@ class Analyzer:
         # Convert found features to absolute global indices
         all_peaks_abs = full_start + all_peaks
         all_troughs_abs = full_start + all_troughs
-        
-        time_step = time[1] - time[0]
-        
+                
         # Filter features into your original left/right pools matching your slice boundaries
         l_peaks = all_peaks_abs[all_peaks_abs < min(array_size, mid_index)]
         l_troughs = all_troughs_abs[all_troughs_abs < min(array_size, mid_index)]
@@ -411,6 +409,9 @@ class Analyzer:
         
         chi2_coeff = (self.core_index * self.wavelength * self.eff_distance) / (np.pi * self.ac_voltage * self.length)
         chi2 = chi2_coeff * np.arcsin(voltage_ratio)
+        
+        chi2 = chi2[~np.isnan(chi2)]
+        
         if not debug:
             return chi2
         else:
