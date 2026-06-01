@@ -25,6 +25,7 @@ class Simulator:
     def visualize_waveform(self, voltage: NDArray[float64], *,
         title: str = "Signal Waveform",
         max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None, mid_indices: Optional[list[int]] = None,
+        ideal_max_indices: Optional[list[int]] = None, ideal_min_indices: Optional[list[int]] = None, ideal_mid_indices: Optional[list[int]] = None,
         ax: Optional[plt.Axes] = None) -> None:
         """Generates a standardized Voltage vs. Time graph for oscilloscope data
 
@@ -37,7 +38,13 @@ class Simulator:
         :param min_indices: A list of array indices corresponding to localized minimums tracked by the segmented sweep algorithm
         :type min_indices: list[int], optional
         :param mid_indices: A list of array indices corresponding to midway between the maxes and mins
-        :type mid_indices: list[int], optional 
+        :type mid_indices: list[int], optional
+        :param ideal_max_indices: A list of array indices corresponding to localized maximums tracked by the segmented sweep algorithm
+        :type ideal_max_indices: list[int], optional
+        :param ideal_min_indices: A list of array indices corresponding to localized minimums tracked by the segmented sweep algorithm
+        :type ideal_min_indices: list[int], optional
+        :param ideal_mid_indices: A list of array indices corresponding to midway between the maxes and mins
+        :type ideal_mid_indices: list[int], optional 
         :param ax: An existing Matplotlib Axes object to plot onto. If None, a new figure and axes context will be created and displayed immediately
         :type ax: plt.Axes, optional
 
@@ -55,7 +62,7 @@ class Simulator:
         ax.plot(self.time, voltage, label="Raw Signal", color="gray", alpha=0.6, linewidth=1)
 
 
-        # Plot optional peak/trough markers
+        # Plot optional max/min/mid markers
         if max_indices is not None and len(max_indices) > 0:
             ax.scatter(self.time[max_indices], voltage[max_indices], 
                     color="red", marker="v", s=40, zorder=5, label="Dominant Maxima")
@@ -66,7 +73,16 @@ class Simulator:
             ax.scatter(self.time[mid_indices], voltage[mid_indices], 
                     color="green", marker="o", s=40, zorder=5, label="Max Phase Change")
         
-        # calculate ideal markers
+        # Plot optional ideal max/min/mid markers
+        if ideal_max_indices is not None and len(ideal_max_indices) > 0:
+            ax.scatter(self.time[ideal_max_indices], voltage[ideal_max_indices], 
+                    color="darkred", marker="s", s=40, zorder=5, label="Ideal Dominant Maxima")
+        if ideal_min_indices is not None and len(ideal_min_indices) > 0:
+            ax.scatter(self.time[ideal_min_indices], voltage[ideal_min_indices], 
+                    color="darkblue", marker="s", s=40, zorder=5, label="Ideal Dominant Minima")
+        if ideal_mid_indices is not None and len(ideal_mid_indices) > 0:
+            ax.scatter(self.time[ideal_mid_indices], voltage[ideal_mid_indices], 
+                    color="darkgreen", marker="s", s=40, zorder=5, label="Ideal Max Phase Change")
 
         # Chart display settings
         ax.set_title(title, fontsize=12, fontweight="bold")
@@ -167,23 +183,23 @@ class Simulator:
         
         :param Vpp: peak-to-peak voltage of the signal waveform in Volts (V)
         :type Vpp: float
-        :param phase_mod_cycles: The amount of 2pi phase cycles the piezo phase modulator moves through in one input signal cycle
+        :param phase_mod_cycles: the amount of 2pi phase cycles the piezo phase modulator moves through in one input signal cycle
         :type phase_mod_cycles: float
-        :param phase_mod_frequency: Frequency of the input signal that drives the phase modulator, in Hertz (Hz)
+        :param phase_mod_frequency: frequency of the input signal that drives the phase modulator, in Hertz (Hz)
         :type phase_mod_frequency: float
-        :param fiber_length: Length of the overlap between the electrodes. Approximately the length of the optical fiber. Measured in metres (m)
+        :param fiber_length: length of the overlap between the electrodes. Approximately the length of the optical fiber. Measured in metres (m)
         :type fiber_length: float
-        :param wavelength: Wavelength of the light used in the interferometer, measured in metres (m)
+        :param wavelength: wavelength of the light used in the interferometer, measured in metres (m)
         :type wavelength: float
-        :param chi2: The second-order nonlinear susceptibility of the PPSF, measured in metres per Volt (m/V)
+        :param chi2: the second-order nonlinear susceptibility of the PPSF, measured in metres per Volt (m/V)
         :type chi2: float
-        :param core_index: The refractive index of the fiber core
+        :param core_index: the refractive index of the fiber core
         :type core_index: float
-        :param ac_voltage: The peak-to-peak AC voltage used to probe the PPSF, measured in Volts (V)
+        :param ac_voltage: the peak-to-peak AC voltage used to probe the PPSF, measured in Volts (V)
         :type ac_voltage: float
-        :param eff_distance: The shortest distance between the electrodes, measured in metres (m)
+        :param eff_distance: the shortest distance between the electrodes, measured in metres (m)
         :type eff_distance: float
-        :param ac_frequency: The frequency of the AC voltage used to probe the PPSF, measured in Hertz (Hz)
+        :param ac_frequency: the frequency of the AC voltage used to probe the PPSF, measured in Hertz (Hz)
         :type ac_frequency: float
         :param t_offset: time phase offset of the waveform. Positive offset moves the signal to the right. Negative offset moves the signal to the left.
         Measured in seconds (s). No offset by default
@@ -200,3 +216,45 @@ class Simulator:
         
         noisy_signal = self._add_noise(signal, SNR)
         return noisy_signal
+    
+    def get_ideal_markers(self, *, phase_mod_cycles: float = 2.9, phase_mod_frequency: float = 150, t_offset: float = 0) -> tuple[NDArray[int], NDArray[int], NDArray[int]]:
+        """Return the ideal max, min, and mid markers in that order. Only for the modulated sine
+
+        :param phase_mod_cycles: the amount of 2pi phase cycles the piezo phase modulator moves through in one input signal cycle
+        :type phase_mod_cycles: float
+        :param phase_mod_frequency: frequency of the input signal that drives the phase modulator, in Hertz (Hz)
+        :type phase_mod_frequency: float
+        :param t_offset: time phase offset of the waveform. Positive offset moves the signal to the right. Negative offset moves the signal to the left.
+            Measured in seconds (s). No offset by default
+        :type t_offset: float
+
+        :return: A tuple containing the arrays of the max, min, and mid marker indices in that order
+        :rtype: tuple[NDArray[int], NDArray[int], NDArray[int]]
+        """
+
+        period = 1 / (phase_mod_cycles * phase_mod_frequency)
+        time_step = self.time[1] - self.time[0] # can also use XINCR from the scope
+        period_index_offset = int(round(period/time_step))
+        index_offset = int(period/time_step)
+
+        time_array_length = len(self.time)
+        first_max = index_offset
+
+        # get furthest left
+        while first_max - period_index_offset > 0:
+            first_max -= period_index_offset
+        
+        if first_max - (period_index_offset/2) > 0:
+            first_min = int(round(first_max - (period_index_offset/2)))
+        else:
+            first_min = int(round(first_max + (period_index_offset/2)))
+        
+        first_mid = int(round((first_min + first_max)/2))
+
+        ideal_max_markers = range(first_max, time_array_length, period_index_offset)
+        ideal_min_markers = range(first_min, time_array_length, period_index_offset)
+        ideal_mid_markers = range(first_mid, time_array_length, int(round(period_index_offset/2)))
+
+        return ideal_max_markers, ideal_min_markers, ideal_mid_markers
+        
+        
