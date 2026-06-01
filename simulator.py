@@ -26,7 +26,7 @@ class Simulator:
         title: str = "Signal Waveform",
         max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None, mid_indices: Optional[list[int]] = None,
         ideal_max_indices: Optional[list[int]] = None, ideal_min_indices: Optional[list[int]] = None, ideal_mid_indices: Optional[list[int]] = None,
-        modulation_max_indices: Optional[list[int]] = None, modulation_min_indices: Optional[list[int]] = None,
+        modulation_optima_indices: Optional[list[int]] = None,
         ax: Optional[plt.Axes] = None) -> None:
         """Generates a standardized Voltage vs. Time graph for oscilloscope data
 
@@ -46,10 +46,8 @@ class Simulator:
         :type ideal_min_indices: list[int], optional
         :param ideal_mid_indices: A list of array indices corresponding to ideal midway points between the maxes and mins
         :type ideal_mid_indices: list[int], optional
-        :param modulation_max_indices: A list of array indices corresponding to modulated localized maximums
-        :type modulation_max_indices: list[int], optional
-        :param modulation_min_indices: A list of array indices corresponding to modulated localized minimums
-        :type modulation_min_indices: list[int], optional
+        :param modulation_optima_indices: A list of array indices corresponding to modulated localized optimums
+        :type modulation_optima_indices: list[int], optional
         :param ax: An existing Matplotlib Axes object to plot onto. If None, a new figure and axes context will be created and displayed immediately
         :type ax: plt.Axes, optional
 
@@ -90,12 +88,9 @@ class Simulator:
                     color="darkgreen", marker="s", s=40, zorder=5, label="Ideal Max Phase Change")
         
         #plot modulation minima and maxima
-        if modulation_max_indices is not None and len(modulation_max_indices) > 0:
-            ax.scatter(self.time[modulation_max_indices], voltage[modulation_max_indices], 
-                    color="black", marker="o", s=40, zorder=5, label="Modulation Maxima")
-        if modulation_min_indices is not None and len(modulation_min_indices) > 0:
-            ax.scatter(self.time[modulation_min_indices], voltage[modulation_min_indices], 
-                    color="black", marker="s", s=40, zorder=5, label="Modulation Minima")
+        if modulation_optima_indices is not None and len(modulation_optima_indices) > 0:
+            ax.scatter(self.time[modulation_optima_indices], voltage[modulation_optima_indices], 
+                    color="black", marker="o", s=40, zorder=5, label="Modulation Optima")
         
         # Chart display settings
         ax.set_title(title, fontsize=12, fontweight="bold")

@@ -134,20 +134,13 @@ class Analyzer:
                 max_index_array.append(max_guess_index)
 
             else:
-                if idx == 0:
-                    if max_guess_index - sweep_radius > 0:
-                        start = max_guess_index - sweep_radius
-                    else:
-                        start = 0
-                        stop = max_guess_index + sweep_radius
-                elif idx == num_max - 1:
-                    if max_guess_index + sweep_radius > array_size - 1:
-                        stop = array_size - 1
-                    else:
-                        stop = max_guess_index + sweep_radius
-                        start = max_guess_index - sweep_radius
-                else:
+                if max_guess_index - sweep_radius > 0:
                     start = max_guess_index - sweep_radius
+                else:
+                    start = 0
+                if max_guess_index + sweep_radius > array_size - 1:
+                    stop = array_size - 1
+                else:
                     stop = max_guess_index + sweep_radius
 
                 for sweep_index in range(start, stop):
@@ -165,20 +158,13 @@ class Analyzer:
                 min_index_array.append(min_guess_index)
             
             else:
-                if idx == 0:
-                    if min_guess_index - sweep_radius > 0:
-                        start = min_guess_index - sweep_radius
-                    else:
-                        start = 0
-                        stop = min_guess_index + sweep_radius
-                elif idx == num_min - 1:
-                    if min_guess_index + sweep_radius > array_size - 1:
-                        stop = array_size - 1
-                    else:
-                        stop = min_guess_index + sweep_radius
-                        start = min_guess_index - sweep_radius
-                else:
+                if min_guess_index - sweep_radius > 0:
                     start = min_guess_index - sweep_radius
+                else:
+                    start = 0
+                if min_guess_index + sweep_radius > array_size - 1:
+                    stop = array_size - 1
+                else:
                     stop = min_guess_index + sweep_radius
 
                 for sweep_index in range(start, stop):
@@ -232,69 +218,84 @@ class Analyzer:
         left_slice = self.voltage[start_idx : min(array_size, mid_index + overlap_radius)]
         right_slice = self.voltage[max(0, mid_index - overlap_radius) : end_idx]
         
-        # Find all peaks and valleys in both directions within the search radius
-        l_peaks, _ = find_peaks(left_slice, prominence=prominence)
-        l_troughs, _ = find_peaks(-left_slice, prominence=prominence)
+        full_start = start_idx
+        full_end = end_idx
+        full_slice = self.voltage[full_start:full_end]
         
-        r_peaks, _ = find_peaks(right_slice, prominence=prominence)
-        r_troughs, _ = find_peaks(-right_slice, prominence=prominence)
+        all_peaks, _ = find_peaks(full_slice, prominence=prominence)
+        all_troughs, _ = find_peaks(-full_slice, prominence=prominence)
+        
+        # Convert found features to absolute global indices
+        all_peaks_abs = full_start + all_peaks
+        all_troughs_abs = full_start + all_troughs
+        
+        time_step = time[1] - time[0]
+        
+        # Filter features into your original left/right pools matching your slice boundaries
+        l_peaks = all_peaks_abs[all_peaks_abs < min(array_size, mid_index)]
+        l_troughs = all_troughs_abs[all_troughs_abs < min(array_size, mid_index)]
+        
+        r_peaks = all_peaks_abs[all_peaks_abs >= max(0, mid_index)]
+        r_troughs = all_troughs_abs[all_troughs_abs >= max(0, mid_index)]
         
         # Determine the absolute closest features to the midpoint
-        # Use absolute max/min within search radius if no prominent peaks exist
         if len(l_peaks) > 0:
-            max_L = start_idx + l_peaks[-1]
+            max_L = l_peaks[-1]
         else:
             max_L = start_idx + int(np.argmax(left_slice))
             
         if len(l_troughs) > 0:
-            min_L = start_idx + l_troughs[-1]
+            min_L = l_troughs[-1]
         else:
             min_L = start_idx + int(np.argmin(left_slice))
             
         if len(r_peaks) > 0:
-            max_R = max(0, mid_index - overlap_radius) + r_peaks[0]
+            max_R = r_peaks[0]
         else:
-            max_R = max(0, mid_index - overlap_radius) + int(np.argmax(right_slice))
+            right_base_idx = max(0, mid_index - overlap_radius)
+            max_R = right_base_idx + int(np.argmax(right_slice))
             
         if len(r_troughs) > 0:
-            min_R = max(0, mid_index - overlap_radius) + r_troughs[0]
+            min_R = r_troughs[0]
         else:
-            min_R = max(0, mid_index - overlap_radius) + int(np.argmin(right_slice))
+            right_base_idx = max(0, mid_index - overlap_radius)
+            min_R = right_base_idx + int(np.argmin(right_slice))
         
-        # Calculate distances to midpoint
-        dist_max_L = mid_index - max_L
-        dist_min_L = mid_index - min_L
-        dist_max_R = max_R - mid_index
-        dist_min_R = min_R - mid_index
+        # 3. Calculate absolute distances to midpoint
+        dist_max_L = abs(mid_index - max_L)
+        dist_min_L = abs(mid_index - min_L)
+        dist_max_R = abs(max_R - mid_index)
+        dist_min_R = abs(min_R - mid_index)
         
         if mode == ModulationMode.PEAK_TO_TROUGH: # max on left and min on right expected
             if dist_max_L <= dist_min_L and dist_min_R <= dist_max_R:
-                # CASE: midpoint in cycle
+                # CASE: midpoint perfectly within cycle
                 return max_L, min_R
             else:
                 # CASE: midpoint between cycles
                 if dist_min_L < dist_max_R:
-                    # left cycle closer, so return its peak and trough.
+                    # left cycle boundary is closer, return its peak and trough
                     return max_L, min_L
                 else:
-                    # right cycle closer, so return its peak and trough.
+                    # right cycle boundary is closer, return its peak and trough
                     return max_R, min_R
                     
         elif mode == ModulationMode.TROUGH_TO_PEAK: # min on left and max on right expected
             if dist_min_L <= dist_max_L and dist_max_R <= dist_min_R:
-                # CASE: midpoint in cycle
+                # CASE: midpoint perfectly within cycle
                 return max_R, min_L
             else:
                 # CASE: midpoint between cycles
                 if dist_max_L < dist_min_R:
-                    # left cycle closer, so return its peak and trough.
+                    # left cycle boundary is closer, return its peak and trough
                     return max_L, min_L
                 else:
-                    # right cycle closer, so return its peak and trough.
+                    # right cycle boundary is closer, return its peak and trough
                     return max_R, min_R
 
     def analyze(self, *, window_size: int = 50, dominant_sweep_factor: float = 4,
-                modulation_sweep_factor: float = 4, modulation_overlap_factor: float = 8, prominence: float = 0.015): # -> NDArray[float64]:
+                modulation_sweep_factor: float = 4, modulation_overlap_factor: float = 8, prominence: float = 0.01,
+                debug: bool = False) -> NDArray:
         """Gets the chi-2 of PPSF through oscilloscope data and other parameters through
         algorithmically finding specific optima of the data
         
@@ -311,8 +312,12 @@ class Analyzer:
         :type modulation_overlap_factor: float
         :param prominence: required vertical height the local feature must stand out. Measured in Volts (V)
         :type prominence: float
+        :param debug: if debug is true, the function will return the modulation maxima and minima. Used to
+            visualize calibrate the analysis parameters
+        :type debug: boolean
         
-        :return: array of chi-2 values calculated from the data. One for each full interval between peak and trough
+        :return: array of chi-2 values calculated from the data. One for each full interval between peak and trough.
+            If ijn debug mode, an array of indices corresponding to modulation optima will be returned.
         :rtype: np ndarray
         """
 
@@ -338,9 +343,15 @@ class Analyzer:
         max_index_num = 0
         min_index_num = 0
         phase_change_index_array = []
+        
+        dominant_amplitudes = []
+        
         if max_index_array[0] < min_index_array[0]: # starts with peak
             while max_index_num != num_max and min_index_num != num_min:
                 phase_change_index_array.append(int((max_index_array[max_index_num] + min_index_array[min_index_num])/2))
+
+                dominant_amplitudes.append(self.voltage[max_index_array[max_index_num]]
+                                           - self.voltage[min_index_array[min_index_num]])
 
                 if (max_index_num + min_index_num) % 2 == 0:
                     max_index_num += 1
@@ -351,6 +362,9 @@ class Analyzer:
             while max_index_num != num_max and min_index_num != num_min:
                 phase_change_index_array.append(int((max_index_array[max_index_num] + min_index_array[min_index_num])/2))
 
+                dominant_amplitudes.append(self.voltage[max_index_array[max_index_num]]
+                                           - self.voltage[min_index_array[min_index_num]])
+                
                 if (max_index_num + min_index_num) % 2 == 0:
                     min_index_num += 1
                 else:
@@ -381,25 +395,23 @@ class Analyzer:
             local_max_idx, local_min_idx = self._get_modulation_extrema(
                 mid_index=phase_change_index, 
                 search_radius=sweep_radius,
-                overlap_radius=int(round(sweep_radius/2)),
+                overlap_radius=int(round(sweep_radius/modulation_overlap_factor)),
                 mode=mode, 
                 prominence=prominence
             )
             
             modulation_max_indices.append(local_max_idx)
             modulation_min_indices.append(local_min_idx)
+            
+        modulation_max_indices = np.array(modulation_max_indices)
+        modulation_min_indices = np.array(modulation_min_indices)
+            
+        modulation_amplitudes = self.voltage[modulation_max_indices] - self.voltage[modulation_min_indices]
+        voltage_ratio = modulation_amplitudes / dominant_amplitudes
         
-        return max_index_array, min_index_array, phase_change_index_array, modulation_max_indices, modulation_min_indices
-
-time = np.linspace(0, 10e-3, 10_000)
-sim = Simulator(time)
-signal = sim.noisy_modulated_sine(SNR=40)
-ideal_max_index_array, ideal_min_index_array, ideal_mid_index_array = sim.get_ideal_markers()
-
-analyzer = Analyzer(time, signal)
-max_index_array, min_index_array, phase_change_index_array, modulation_maxima, modulation_minima = analyzer.analyze()
-
-sim.visualize_waveform(signal, max_indices=max_index_array, min_indices=min_index_array, mid_indices=phase_change_index_array,
-                       ideal_max_indices=ideal_max_index_array, ideal_min_indices=ideal_min_index_array, ideal_mid_indices=ideal_mid_index_array,
-                       modulation_max_indices=modulation_maxima, modulation_min_indices=modulation_minima)
-        
+        chi2_coeff = (self.core_index * self.wavelength * self.eff_distance) / (np.pi * self.ac_voltage * self.length)
+        chi2 = chi2_coeff * np.arcsin(voltage_ratio)
+        if not debug:
+            return chi2
+        else:
+            return np.append(modulation_max_indices, modulation_min_indices)
