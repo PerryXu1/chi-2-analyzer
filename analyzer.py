@@ -6,9 +6,28 @@ import scipy.ndimage as ndi
 from scipy.signal import find_peaks
 from enum import Enum
 
+from enum import Enum
+
 class ModulationMode(Enum):
+    """Represents the directional orientation of the high-frequency
+    electro-optic (EO) carrier ripple transition near a detected signal midpoint.
+    
+    This is used to instruct the localized peak-finding window whether it should 
+    expect a local maximum (crest) or local minimum (trough) on the immediate left 
+    or right side of a macro-wave transition boundary.
+    """
+
     PEAK_TO_TROUGH = 0
+    """Indicates a falling dominant slope. The localized search treats the immediate left 
+    of the midpoint as a high-frequency carrier maximum, and the immediate right as 
+    a high-frequency carrier minimum.
+    """
+
     TROUGH_TO_PEAK = 1
+    """Indicates a rising dominant slope. The localized search treats the immediate left 
+    of the midpoint as a high-frequency carrier minimum, and the immediate right as 
+    a high-frequency carrier maximum.
+    """
 
 class Analyzer:
     """Class of methods used to analyze an input signal waveform and calculate the chi-2
@@ -184,66 +203,114 @@ class Analyzer:
         smoothed_voltage = ndi.uniform_filter1d(self.voltage, size=window_size)
         
         return smoothed_voltage
-    
-    def _get_modulation_optima(self, voltage: NDArray[float64], mid_index: int, 
-                               search_radius: int, prominence: float = 0.01) -> tuple[int, int]:
-        """Finds the closest local maximum to the left and closest local minimum to the right 
-        of a midpoint by testing points sequentially, stopping as soon as an appropriate optimum is found.
 
-        :param voltage: The raw (unsmoothed) voltage array to measure true peak-to-peak amplitude
-        :type voltage: NDArray[float64]
-        :param mid_index: The array index of the calculated midpoint
+    def _get_modulation_extrema(self, mid_index: int, search_radius: int, overlap_radius: int,
+                                mode: ModulationMode, prominence: float = 0.01) -> tuple[int, int]:
+        """Finds the correct high-frequency carrier modulation extrema (max and min) near a midpoint.
+        Handles edge cases where the midpoint falls into the gap between two modulation cycles.
+
+        :param mid_index: the array index of the calculated midpoint.
         :type mid_index: int
-        :param search_radius: The maximum number of array indices to search left and right of the midpoint
+        :param search_radius: maximum number of array indices to search left and right.
         :type search_radius: int
-        :param prominence: The required vertical height the local peak/valley must stand out relative to noise
+        :param search_radius: maximum number of array indices to overlap (e.g. search past the midpoint)
+        :type search_radius: int
+        :param mode: direction of the carrier ripple modulation transition.
+        :type mode: ModulationMode
+        :param prominence: required vertical height the local feature must stand out.
         :type prominence: float
 
-        :return: A tuple containing the index of the local maximum on the left and local minimum on the right
+        :return: a tuple containing (left_optimum_index, right_optimum_index)
         :rtype: tuple[int, int]
         """
-        array_size = len(voltage)
+        array_size = len(self.voltage)
         
-        # Left search
         start_idx = max(0, mid_index - search_radius)
-        left_slice = voltage[start_idx : mid_index + 1]
-        
-        # find_peaks identifies peaks from left-to-right. 
-        # To stop at the *closest* optimum to our midpoint, we check from the end of the list backwards.
-        left_peaks, _ = find_peaks(left_slice, prominence=prominence)
-        
-        if len(left_peaks) > 0:
-            # The last element in left_peaks is physically closest to mid_index
-            local_max_idx = start_idx + left_peaks[-1]
-        else:
-            # Fallback if no prominent peak matches criteria: absolute max in the localized radius
-            local_max_idx = start_idx + int(np.argmax(left_slice))
-            
-        # --- 2. Search Right for the Closest Minima ---
         end_idx = min(array_size, mid_index + search_radius)
-        right_slice = voltage[mid_index : end_idx]
         
-        # find_peaks maps left-to-right. The first item found here is closest to mid_index.
-        right_valleys, _ = find_peaks(-right_slice, prominence=prominence)
+        # Slices overlap past the midpoint index using the overlap_radius parameter
+        left_slice = self.voltage[start_idx : min(array_size, mid_index + overlap_radius)]
+        right_slice = self.voltage[max(0, mid_index - overlap_radius) : end_idx]
         
-        if len(right_valleys) > 0:
-            # The first element found is physically closest to mid_index
-            local_min_idx = mid_index + right_valleys[0]
+        # Find all peaks and valleys in both directions within the search radius
+        l_peaks, _ = find_peaks(left_slice, prominence=prominence)
+        l_troughs, _ = find_peaks(-left_slice, prominence=prominence)
+        
+        r_peaks, _ = find_peaks(right_slice, prominence=prominence)
+        r_troughs, _ = find_peaks(-right_slice, prominence=prominence)
+        
+        # Determine the absolute closest features to the midpoint
+        # Use absolute max/min within search radius if no prominent peaks exist
+        if len(l_peaks) > 0:
+            max_L = start_idx + l_peaks[-1]
         else:
-            # Fallback if no prominent valley matches criteria: absolute min in the localized radius
-            local_min_idx = mid_index + int(np.argmin(right_slice))
+            max_L = start_idx + int(np.argmax(left_slice))
             
-        return int(local_max_idx), int(local_min_idx)
+        if len(l_troughs) > 0:
+            min_L = start_idx + l_troughs[-1]
+        else:
+            min_L = start_idx + int(np.argmin(left_slice))
+            
+        if len(r_peaks) > 0:
+            max_R = max(0, mid_index - overlap_radius) + r_peaks[0]
+        else:
+            max_R = max(0, mid_index - overlap_radius) + int(np.argmax(right_slice))
+            
+        if len(r_troughs) > 0:
+            min_R = max(0, mid_index - overlap_radius) + r_troughs[0]
+        else:
+            min_R = max(0, mid_index - overlap_radius) + int(np.argmin(right_slice))
+        
+        # Calculate distances to midpoint
+        dist_max_L = mid_index - max_L
+        dist_min_L = mid_index - min_L
+        dist_max_R = max_R - mid_index
+        dist_min_R = min_R - mid_index
+        
+        if mode == ModulationMode.PEAK_TO_TROUGH: # max on left and min on right expected
+            if dist_max_L <= dist_min_L and dist_min_R <= dist_max_R:
+                # CASE: midpoint in cycle
+                return max_L, min_R
+            else:
+                # CASE: midpoint between cycles
+                if dist_min_L < dist_max_R:
+                    # left cycle closer, so return its peak and trough.
+                    return max_L, min_L
+                else:
+                    # right cycle closer, so return its peak and trough.
+                    return max_R, min_R
+                    
+        elif mode == ModulationMode.TROUGH_TO_PEAK: # min on left and max on right expected
+            if dist_min_L <= dist_max_L and dist_max_R <= dist_min_R:
+                # CASE: midpoint in cycle
+                return max_R, min_L
+            else:
+                # CASE: midpoint between cycles
+                if dist_max_L < dist_min_R:
+                    # left cycle closer, so return its peak and trough.
+                    return max_L, min_L
+                else:
+                    # right cycle closer, so return its peak and trough.
+                    return max_R, min_R
 
-    def analyze(self, *, window_size: int = 50, max_min_epsilon_factor: float = 4): # -> NDArray[float64]:
+    def analyze(self, *, window_size: int = 50, dominant_sweep_factor: float = 4,
+                modulation_sweep_factor: float = 4, modulation_overlap_factor: float = 8, prominence: float = 0.015): # -> NDArray[float64]:
         """Gets the chi-2 of PPSF through oscilloscope data and other parameters through
         algorithmically finding specific optima of the data
         
         :param window_size: The number of data points to include in the moving average window. Used to find the dominant optima and midpoints
         :type window_size: int
-        :param max_min_epsilon_factor: from the guess, the analyzer sweeps period/max_min_epsilon_factor
-            on both sides to find the true max/min. Default sweeps period/8
-        :type max_min_epsilon_factor: float
+        :param dominant_sweep_factor: from the guess, the analyzer sweeps period/dominant_sweep_factor
+            on both sides to find the true max/min. Default sweeps period/4
+        :type dominant_sweep_factor: float
+        :param modulation_sweep_factor: from the midpoint guess, the analyzer sweeps period/modulation_sweep_factor
+            on both sides to find the carrier modulation max/min. Default sweeps period/4
+        :type modulation_sweep_factor: float
+        :param modulation_overlap_factor: from the midpoint guess, the analyzer sweeps period/modulation_overlap_factor past the midpoint
+            on both sides to prevent edge cases when finding the carrier modulation max/min. Default sweeps period/8
+        :type modulation_overlap_factor: float
+        :param prominence: required vertical height the local feature must stand out. Measured in Volts (V)
+        :type prominence: float
         
         :return: array of chi-2 values calculated from the data. One for each full interval between peak and trough
         :rtype: np ndarray
@@ -262,7 +329,7 @@ class Analyzer:
         max_index_array, min_index_array = self._get_optima(voltage=smoothed_voltage,
                                                             array_size=array_size,
                                                             period_index_offset=period_index_offset,
-                                                            max_min_epsilon_factor=max_min_epsilon_factor)
+                                                            max_min_epsilon_factor=dominant_sweep_factor)
 
         # finding positions of max phase change
         num_max = len(max_index_array)
@@ -271,7 +338,7 @@ class Analyzer:
         max_index_num = 0
         min_index_num = 0
         phase_change_index_array = []
-        if max_index_array[0] < min_index_array[0]:
+        if max_index_array[0] < min_index_array[0]: # starts with peak
             while max_index_num != num_max and min_index_num != num_min:
                 phase_change_index_array.append(int((max_index_array[max_index_num] + min_index_array[min_index_num])/2))
 
@@ -280,7 +347,7 @@ class Analyzer:
                 else:
                     min_index_num += 1
 
-        else:
+        else: # starts with trough
             while max_index_num != num_max and min_index_num != num_min:
                 phase_change_index_array.append(int((max_index_array[max_index_num] + min_index_array[min_index_num])/2))
 
@@ -289,17 +356,50 @@ class Analyzer:
                 else:
                     max_index_num += 1
         
-        return max_index_array, min_index_array, phase_change_index_array
+        # Finding modulation optima
+        modulation_max_indices = []
+        modulation_min_indices = []
+        sweep_radius = int(round(period_index_offset / modulation_sweep_factor))
 
+        if max_index_array[0] < min_index_array[0]:
+            first_slope_is_falling = True
+        else:
+            first_slope_is_falling = False
+
+        for idx, phase_change_index in enumerate(phase_change_index_array):
+            if first_slope_is_falling:
+                if idx % 2 == 0:
+                    mode = ModulationMode.PEAK_TO_TROUGH
+                else:
+                    mode = ModulationMode.TROUGH_TO_PEAK
+            else:
+                if idx % 2 == 0:
+                    mode = ModulationMode.TROUGH_TO_PEAK
+                else:
+                    mode = ModulationMode.PEAK_TO_TROUGH
+            
+            local_max_idx, local_min_idx = self._get_modulation_extrema(
+                mid_index=phase_change_index, 
+                search_radius=sweep_radius,
+                overlap_radius=int(round(sweep_radius/2)),
+                mode=mode, 
+                prominence=prominence
+            )
+            
+            modulation_max_indices.append(local_max_idx)
+            modulation_min_indices.append(local_min_idx)
+        
+        return max_index_array, min_index_array, phase_change_index_array, modulation_max_indices, modulation_min_indices
 
 time = np.linspace(0, 10e-3, 10_000)
 sim = Simulator(time)
-signal = sim.noisy_modulated_sine(SNR=20)
+signal = sim.noisy_modulated_sine(SNR=40)
 ideal_max_index_array, ideal_min_index_array, ideal_mid_index_array = sim.get_ideal_markers()
 
 analyzer = Analyzer(time, signal)
-max_index_array, min_index_array, phase_change_index_array = analyzer.analyze(max_min_epsilon_factor=4, window_size=50)
+max_index_array, min_index_array, phase_change_index_array, modulation_maxima, modulation_minima = analyzer.analyze()
 
 sim.visualize_waveform(signal, max_indices=max_index_array, min_indices=min_index_array, mid_indices=phase_change_index_array,
-                       ideal_max_indices=ideal_max_index_array, ideal_min_indices=ideal_min_index_array, ideal_mid_indices=ideal_mid_index_array)
+                       ideal_max_indices=ideal_max_index_array, ideal_min_indices=ideal_min_index_array, ideal_mid_indices=ideal_mid_index_array,
+                       modulation_max_indices=modulation_maxima, modulation_min_indices=modulation_minima)
         

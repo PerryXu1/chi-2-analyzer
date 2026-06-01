@@ -26,6 +26,7 @@ class Simulator:
         title: str = "Signal Waveform",
         max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None, mid_indices: Optional[list[int]] = None,
         ideal_max_indices: Optional[list[int]] = None, ideal_min_indices: Optional[list[int]] = None, ideal_mid_indices: Optional[list[int]] = None,
+        modulation_max_indices: Optional[list[int]] = None, modulation_min_indices: Optional[list[int]] = None,
         ax: Optional[plt.Axes] = None) -> None:
         """Generates a standardized Voltage vs. Time graph for oscilloscope data
 
@@ -37,14 +38,18 @@ class Simulator:
         :type max_indices: list[int], optional
         :param min_indices: A list of array indices corresponding to localized minimums tracked by the segmented sweep algorithm
         :type min_indices: list[int], optional
-        :param mid_indices: A list of array indices corresponding to midway between the maxes and mins
+        :param mid_indices: A list of array indices corresponding to midway points between the maxes and mins
         :type mid_indices: list[int], optional
-        :param ideal_max_indices: A list of array indices corresponding to localized maximums tracked by the segmented sweep algorithm
+        :param ideal_max_indices: A list of array indices corresponding to ideal localized maximums
         :type ideal_max_indices: list[int], optional
-        :param ideal_min_indices: A list of array indices corresponding to localized minimums tracked by the segmented sweep algorithm
+        :param ideal_min_indices: A list of array indices corresponding to ideal localized minimums
         :type ideal_min_indices: list[int], optional
-        :param ideal_mid_indices: A list of array indices corresponding to midway between the maxes and mins
-        :type ideal_mid_indices: list[int], optional 
+        :param ideal_mid_indices: A list of array indices corresponding to ideal midway points between the maxes and mins
+        :type ideal_mid_indices: list[int], optional
+        :param modulation_max_indices: A list of array indices corresponding to modulated localized maximums
+        :type modulation_max_indices: list[int], optional
+        :param modulation_min_indices: A list of array indices corresponding to modulated localized minimums
+        :type modulation_min_indices: list[int], optional
         :param ax: An existing Matplotlib Axes object to plot onto. If None, a new figure and axes context will be created and displayed immediately
         :type ax: plt.Axes, optional
 
@@ -83,7 +88,15 @@ class Simulator:
         if ideal_mid_indices is not None and len(ideal_mid_indices) > 0:
             ax.scatter(self.time[ideal_mid_indices], voltage[ideal_mid_indices], 
                     color="darkgreen", marker="s", s=40, zorder=5, label="Ideal Max Phase Change")
-
+        
+        #plot modulation minima and maxima
+        if modulation_max_indices is not None and len(modulation_max_indices) > 0:
+            ax.scatter(self.time[modulation_max_indices], voltage[modulation_max_indices], 
+                    color="black", marker="o", s=40, zorder=5, label="Modulation Maxima")
+        if modulation_min_indices is not None and len(modulation_min_indices) > 0:
+            ax.scatter(self.time[modulation_min_indices], voltage[modulation_min_indices], 
+                    color="black", marker="s", s=40, zorder=5, label="Modulation Minima")
+        
         # Chart display settings
         ax.set_title(title, fontsize=12, fontweight="bold")
         ax.set_xlabel("Time (s)", fontsize=10)
