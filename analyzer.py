@@ -415,4 +415,3 @@ class Analyzer:
             return chi2
         else:
             return np.append(modulation_max_indices, modulation_min_indices)
-        
