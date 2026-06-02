@@ -405,7 +405,7 @@ class Analyzer:
         modulation_min_indices = np.array(modulation_min_indices)
             
         modulation_amplitudes = self.voltage[modulation_max_indices] - self.voltage[modulation_min_indices]
-        voltage_ratio = modulation_amplitudes / dominant_amplitudes
+        voltage_ratio = np.abs(modulation_amplitudes / dominant_amplitudes)
         
         chi2_coeff = (self.core_index * self.wavelength * self.eff_distance) / (np.pi * self.ac_voltage * self.length)
         chi2 = chi2_coeff * np.arcsin(voltage_ratio)
