@@ -1,4 +1,4 @@
-# Electro-Optic Phase Modulator Signal Analyzer
+# Electro-Optic Phase Modulator Interferometer Signal Analyzer
 
 A specialized Python-based tool designed for processing high-frequency oscilloscope waveforms from phase-modulated fiber setups. The application isolates the dominant macroscopic wave from high-frequency modulation oscillations, algorithmically tracks locations of maximum phase-change, and extracts localized modulation extrema for computing the second order nonlinear susceptibility $\chi^{(2)}$ with high accuracy and precision.
 
