@@ -312,7 +312,8 @@ class Analyzer:
                     # right cycle boundary is closer, return its peak and trough
                     return max_R, min_R
 
-    def analyze(self, *, window_size: int = 50, dominant_sweep_factor: float = 4, discontinuity_exclusion_factor: float = 0.8,
+    def analyze(self, *, window_size: int = 50, dominant_sweep_factor: float = 4,
+                discontinuity_exclusion_factor: float = 0.8, discontinuity_exclusion_optima= 6,
                 modulation_sweep_factor: float = 4, modulation_overlap_factor: float = 8, prominence: float = 0.01,
                 debug: bool = False) -> NDArray:
         """Gets the chi-2 of PPSF through oscilloscope data and other parameters through
@@ -326,9 +327,15 @@ class Analyzer:
         :param discontinuity_exclusion_factor: When finding optima, the algorithm will ignore any
             optima with an amplitude less than discontinuity_exclusion_factor * max_amplitude,
             where max_amplitude is global_max - global_min, which is a rough amplitude approximation
-            Used to filter out discontinuities that can distort optima, thus distorting the chi2.
-            Default is 0.8
+            Used to filter out discontinuities that align with optima, which can distort the optima
+            and thus the chi2. Default is 0.8
         :type discontinuity_exclusion_factor: float
+        :param discontinuity_exclusion_optima: The minimum amount of optima required to be found within
+            the midpoint sweep (determined by modulation_sweep factor) for that midpoint to be considered
+            a true max phase change point. Used to filter out discontinuities that align with midpoints
+            between optima, which destroys the modulation oscillations and thus distort the chi2.
+            Default is 6
+        :type discontinuity_exclusion_optima: float
         :param modulation_sweep_factor: from the midpoint guess, the analyzer sweeps period/modulation_sweep_factor
             on both sides to find the carrier modulation max/min. Default sweeps period/4
         :type modulation_sweep_factor: float
@@ -360,7 +367,7 @@ class Analyzer:
                                                             array_size=array_size,
                                                             period_index_offset=period_index_offset,
                                                             max_min_epsilon_factor=dominant_sweep_factor,
-                                                            discontinuity_exclusion_factor=0.8)
+                                                            discontinuity_exclusion_factor=discontinuity_exclusion_factor)
 
         # finding positions of max phase change
         num_max = len(max_index_array)
@@ -369,6 +376,8 @@ class Analyzer:
         max_index_num = 0
         min_index_num = 0
         phase_change_index_array = []
+        
+        sweep_radius = int(round(period_index_offset / modulation_sweep_factor))
         
         dominant_amplitudes = []
         prev_optima = None
@@ -384,23 +393,44 @@ class Analyzer:
             else:
                 if max_index_array[max_index_num] < min_index_array[min_index_num]:
                     if prev_optima != Optima.MAXIMA:
-                        phase_change_index_array.append(int((max_index_array[max_index_num] + min_index_array[min_index_num])/2))
-                        dominant_amplitudes.append(self.voltage[max_index_array[max_index_num]]
-                                                    - self.voltage[min_index_array[min_index_num]])
+                        candidate_mid = int((max_index_array[max_index_num] + min_index_array[min_index_num]) / 2)
+                        
+                        v_start = max(0, candidate_mid - sweep_radius)
+                        v_stop = min(array_size, candidate_mid + sweep_radius)
+                        validation_slice = self.voltage[v_start:v_stop]
+                        
+                        pks, _ = find_peaks(validation_slice, prominence=prominence)
+                        trs, _ = find_peaks(-validation_slice, prominence=prominence)
+                        local_oscillations = len(pks) + len(trs)
+                        
+                        if local_oscillations >= discontinuity_exclusion_optima:
+                            phase_change_index_array.append(candidate_mid)
+                            dominant_amplitudes.append(self.voltage[max_index_array[max_index_num]]
+                                                        - self.voltage[min_index_array[min_index_num]])
                         
                     max_index_num += 1
                 elif max_index_array[max_index_num] > min_index_array[min_index_num]:
                     if prev_optima != Optima.MINIMA:
-                        phase_change_index_array.append(int((max_index_array[max_index_num] + min_index_array[min_index_num])/2))
-                        dominant_amplitudes.append(self.voltage[max_index_array[max_index_num]]
-                                                    - self.voltage[min_index_array[min_index_num]])
+                        candidate_mid = int((max_index_array[max_index_num] + min_index_array[min_index_num]) / 2)
+                        
+                        v_start = max(0, candidate_mid - sweep_radius)
+                        v_stop = min(array_size, candidate_mid + sweep_radius)
+                        validation_slice = self.voltage[v_start:v_stop]
+                        
+                        pks, _ = find_peaks(validation_slice, prominence=prominence)
+                        trs, _ = find_peaks(-validation_slice, prominence=prominence)
+                        local_oscillations = len(pks) + len(trs)
+                        
+                        if local_oscillations >= discontinuity_exclusion_optima:
+                            phase_change_index_array.append(candidate_mid)
+                            dominant_amplitudes.append(self.voltage[max_index_array[max_index_num]]
+                                                        - self.voltage[min_index_array[min_index_num]])
                             
                     min_index_num += 1
         
         # Finding modulation optima
         modulation_max_indices = []
         modulation_min_indices = []
-        sweep_radius = int(round(period_index_offset / modulation_sweep_factor))
 
         if max_index_array[0] < min_index_array[0]:
             first_slope_is_falling = True
