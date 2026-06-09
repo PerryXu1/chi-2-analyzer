@@ -2,7 +2,7 @@ from simulator import Simulator
 from analyzer import Analyzer
 import numpy as np
 
-time = np.linspace(0, 20e-3, 1_000_000)
+time = np.linspace(0, 10e-3, 2000)
 sim = Simulator(time=time)
 signal = sim.noisy_modulated_sine(
     Vpp=0.114,

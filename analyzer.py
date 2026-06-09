@@ -6,8 +6,6 @@ import scipy.ndimage as ndi
 from scipy.signal import find_peaks
 from enum import Enum
 
-from enum import Enum
-
 class ModulationMode(Enum):
     """Represents the directional orientation of the high-frequency
     electro-optic (EO) carrier ripple transition near a detected signal midpoint.
