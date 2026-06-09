@@ -12,9 +12,18 @@ class Interface:
     """
 
     instrument_num: int
-
+    
     def __init__(self, instrument_num: int = 1):
         self.instrument_num = instrument_num
+        self.rm = pyvisa.ResourceManager()
+        visa_address = f"GPIB0::{self.instrument_num}::INSTR"
+        
+        self.scope = self.rm.open_resource(visa_address)
+        self.scope.timeout = 5000 
+        self.scope.read_termination = '\n'
+        self.write_termination = '\n'
+        
+        self.scope.write("*CLS")
 
     def init_instrument(self) -> bool:
         """Checks for proper connection to oscilloscope
@@ -22,26 +31,21 @@ class Interface:
         :return: True if the scope is connected. False if not
         :rtype: bool
         """
-        rm = pyvisa.ResourceManager()
-        visa_address = f"GPIB0::{self.instrument_num}::INSTR"
         
-        try:
-            scope = rm.open_resource(visa_address)
+        try:      
+            self.scope.write("*CLS")
+
+            self.scope.timeout = 5000 # 5 second timeout limit
+            self.scope.read_termination = '\n'
+            self.scope.write_termination = '\n'
             
-            scope.timeout = 5000 # 5 second timeout limit
-            scope.read_termination = '\n'
-            scope.write_termination = '\n'
+            self.scope.query("*IDN?") # Test query
             
-            scope.query("*IDN?") # Test query
-            
-            scope.close()
             return True
             
         except pyvisa.errors.VisaIOError as e:
             print(f"\nNo connection between python and the oscilloscope: {e}")
             return False
-        finally:
-            rm.close()
 
     def acquire_signal(self, *, channel: int = 2) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Captures a waveform from the specified channel and returns scaled voltages as a NumPy ndarray.
@@ -51,26 +55,24 @@ class Interface:
         :return: An array of times and a corresponding array of voltages
         :rtype: tuple[NDArray[np.float64], NDArray[np.float64]]
         """
-
-        rm = pyvisa.ResourceManager()
-        visa_address = f"GPIB0::{self.instrument_num}::INSTR"
         
         try:
-            scope = rm.open_resource(visa_address)
-            scope.timeout = 5000  # 5 second timeout window
-            scope.read_termination = '\n'
-            scope.write_termination = '\n'
+            self.scope.write("*CLS")
+
+            self.scope.timeout = 5000  # 5 second timeout window
+            self.scope.read_termination = '\n'
+            self.scope.write_termination = '\n'
             
             # DIGITIZE to freeze display buffer
-            scope.write(f":DIGITIZE CHANNEL{channel}")
-            scope.write(f":DIGITIZE CHANNEL")
+            self.scope.write(f":DIGITIZE CHANNEL{channel}")
+            self.scope.write(f":DIGITIZE CHANNEL")
             
             # configure data transfer to get bytes from selected channel
-            scope.write(f":WAVEFORM:SOURCE CHANNEL{channel}")
-            scope.write(":WAVEFORM:FORMAT BYTE")
+            self.scope.write(f":WAVEFORM:SOURCE CHANNEL{channel}")
+            self.scope.write(":WAVEFORM:FORMAT BYTE")
             
             # get preamble parameters
-            preamble = scope.query(":WAVEFORM:PREAMBLE?").split(',')
+            preamble = self.scope.query(":WAVEFORM:PREAMBLE?").split(',')
 
             num_points = float(preamble[2])
 
@@ -83,15 +85,14 @@ class Interface:
             y_reference = float(preamble[9])
 
             # get raw data
-            scope.write(":WAVEFORM:DATA?")
-            raw_voltage = scope.read_binary_values(datatype='B', container=np.array)
+            self.scope.write(":WAVEFORM:DATA?")
+            raw_voltage = self.scope.read_binary_values(datatype='B', container=np.array)
             raw_time = np.arange(num_points)
 
             # convert to time and voltage arrays
             time = ((raw_time - x_reference) * x_increment) + x_origin
             voltage = ((raw_voltage - y_reference) * y_increment) + y_origin
             
-            scope.close()
             return (time, voltage)
 
         except pyvisa.errors.VisaIOError as e:
@@ -100,8 +101,6 @@ class Interface:
         except Exception as e:
             print(f"\nSystem Parsing Error: {e}")
             return None
-        finally:
-            rm.close()
 
     def get_amplitude(self, *, channel: int = 1) -> float:
         """Gets the amplitude of a waveform from the selected oscilloscope channel
@@ -112,26 +111,21 @@ class Interface:
         :rtype: float
         """
 
-        rm = pyvisa.ResourceManager()
-        visa_address = f"GPIB0::{self.instrument_num}::INSTR"
-
         try:
-            scope = rm.open_resource(visa_address)
-            scope.timeout = 5000 # 5 second timeout limit
-            scope.read_termination = '\n'
-            scope.write_termination = '\n'
+            self.scope.write("*CLS")
 
-            scope.write(f":MEASURE:SOURCE CHANNEL{channel}")
-            vpp = float(scope.query(":MEASURE:VPP?"))
+            self.scope.timeout = 5000 # 5 second timeout limit
+            self.scope.read_termination = '\n'
+            self.scope.write_termination = '\n'
 
-            scope.close()
+            self.scope.write(f":MEASURE:SOURCE CHANNEL{channel}")
+            vpp = float(self.scope.query(":MEASURE:VPP?"))
+
             return vpp
 
         except Exception as e:
             print(f"Failed Measurement: {e}")
             return None
-        finally:
-            rm.close()
 
     def set_screen(self, *, channel: int,
                    volts_per_div: float, time_per_div: float,
@@ -169,30 +163,40 @@ class Interface:
             scope.read_termination = '\n'
             scope.write_termination = '\n'
 
-            scope.write(f":CHANNEL{channel}:DISPLAY ON")
+            if channel == 1:
+                scope.write(":CHANNEL2:DISPLAY OFF")
+                scope.write(":CHANNEL1:DISPLAY ON")
+            else:
+                scope.write(":CHANNEL1:DISPLAY OFF")
+                scope.write(":CHANNEL2:DISPLAY ON")
 
             # vertical settings
-            scope.write(f":CHANNEL{channel}:RANGE {vertical_range}")
-            scope.write(f":CHANNEL{channel}:OFFSET {vertical_offset}")
+            scope.write(f":CHANNEL{channel}:RANGE {vertical_range:.4f}")
+            scope.write(f":CHANNEL{channel}:OFFSET {vertical_offset:.4f}")
             scope.write(f":CHANNEL{channel}:COUPLING DC")
 
             # horizontal settings
-            scope.write(f":TIMEBASE:RANGE {horizontal_range}")
-            scope.write(f":TIMEBASE:DELAY {horizontal_offset}")
+            scope.write(f":TIMEBASE:RANGE {horizontal_range:.4f}")
+            scope.write(f":TIMEBASE:DELAY {horizontal_offset:.4f}")
 
             if ext_trigger == False:
                 scope.write(f":TRIGGER:SOURCE CHANNEL{channel}")
-                scope.write(f":TRIGGER:LEVEL {trigger_level}")
+                scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
             else:
                 scope.write(":TRIGGER:SOURCE EXTERNAL")
-                scope.write(":TRIGGER:EXTERNAL:RANGE 1.0")
-                scope.write(f":TRIGGER:LEVEL {trigger_level}")
+                scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
                 scope.write(":TRIGGER:SLOPE POSITIVE")
 
             time.sleep(0.1) # delay for change time
             scope.close()
 
         except Exception as e:
-            print(f"❌ Failed to assign external trigger criteria: {e}")
+            print(f"Hardware Error {e}")
+
+    def close(self) -> None:
+        """Clean up the bus links when the entire script exits"""
+
+        try:
+            self.scope.close()
         finally:
-            rm.close()
+            self.rm.close()
