@@ -2,7 +2,7 @@ from display import Display
 from analyzer import Analyzer
 from interface import Interface
 
-SHOTS = 19
+SHOTS = 20
 V_AC_CALIBRATION_PASSES = 5 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
@@ -42,7 +42,7 @@ for i in range(SHOTS):
                         ext_trigger=True)
 
     time, voltage = scope.acquire_signal(channel=2)
-    chi2, max_in, min_in = analyzer.analyze(time=time,
+    modulation_indices, max_indices, min_indices = analyzer.analyze(time=time,
                             voltage=voltage,
                             window_size=50,
                             dominant_sweep_factor=4,
@@ -54,13 +54,10 @@ for i in range(SHOTS):
                             voltage_ratio_acceptance=0.7,
                             debug=True)
     
-    display.visualize_waveform(time=time, voltage=voltage, modulation_optima_indices=chi2, max_indices=max_in, min_indices=min_in)
-    
-    # chi2_array.extend(chi2)
-    
+    display.visualize_waveform(time=time,
+                               voltage=voltage,
+                               modulation_optima_indices=modulation_indices,
+                               max_indices=max_indices,
+                               min_indices=min_indices)
+        
 scope.close()
-
-# if len(chi2_array) != 0:    
-#     with open("results.txt", "w") as file:
-#         for value in chi2_array:
-#             file.write(f"{value}\n")
