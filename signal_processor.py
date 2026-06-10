@@ -1,13 +1,19 @@
-from simulator import Simulator
+from display import Display
 from analyzer import Analyzer
-import numpy as np
 from interface import Interface
 
 SHOTS = 20
 V_AC_CALIBRATION_PASSES = 5 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
-analyzer = Analyzer()
+analyzer = Analyzer(core_index=1.52,
+                    wavelength=1550e-9,
+                    eff_distance=33e-6,
+                    ac_voltage=240,
+                    length=0.3,
+                    driver_frequency=100,
+                    phase_mod_cycles=2.5)
 
+display = Display(title="Chi-2 Waveform")
 
 scope = Interface(instrument_num=1)
 scope.reset()
@@ -25,5 +31,28 @@ for i in range(SHOTS):
                         ext_trigger=False)
         V_ac = 1000 * scope.get_amplitude(channel=1)
 
+        scope.set_screen(channel=2,
+                        volts_per_div=50e-3,
+                        time_per_div=1e-3,
+                        vertical_offset=0,
+                        horizontal_offset=0,
+                        trigger_level=800e-3, # Can try Ext/10 setting maybe
+                        ext_trigger=True)
+
+    time, voltage = scope.acquire_signal(channel=2)
+    modulation_indices = analyzer.analyze(time=time,
+                            voltage=voltage,
+                            window_size=50,
+                            dominant_sweep_factor=4,
+                            discontinuity_exclusion_factor=0.8,
+                            discontinuity_exclusion_optima=6,
+                            modulation_sweep_factor=4,
+                            modulation_overlap_factor=8,
+                            prominence=0.01,
+                            debug=True)
     
-    
+    display.visualize_waveform(time=time,
+                               voltage=voltage,
+                               modulation_optima_indices=modulation_indices)
+
+scope.close()
