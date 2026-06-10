@@ -1,7 +1,7 @@
 import pyvisa
 import numpy as np
 from numpy.typing import NDArray
-import time
+import time as tm
 
 class Interface:
     """A class of methods to acquire data from an oscilloscope through GPIB. Allows for connection checking, and waveform collection.
@@ -56,6 +56,8 @@ class Interface:
         try:
             self.scope.write("*CLS")
 
+            self.scope.write(":TIMEBASE:MODE NORMAL")
+
             self.scope.write(":ACQUIRE:TYPE NORMAL")
             self.scope.write(":ACQUIRE:COMPLETE 100")
 
@@ -64,13 +66,12 @@ class Interface:
             self.scope.write(":WAVEFORM:FORMAT BYTE")
             
             # DIGITIZE to freeze display buffer
-            self.scope.write(f":DIGITIZE CHANNEL{channel}")
+            # self.scope.write(f":DIGITIZE CHANNEL{channel}")
+            # self.scope.query("*OPC?")
             
-            print("A")
             # get preamble parameters
             preamble = self.scope.query(":WAVEFORM:PREAMBLE?").split(',')
 
-            print("B")
             num_points = float(preamble[2])
 
             x_increment = float(preamble[4])
@@ -80,8 +81,6 @@ class Interface:
             y_increment = float(preamble[7])
             y_origin = float(preamble[8])
             y_reference = float(preamble[9])
-
-            print("C")
 
             # get raw data
             # raw_voltage = self.scope.query(":WAVEFORM:DATA?")
@@ -180,7 +179,7 @@ class Interface:
             self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
 
 
-            time.sleep(1) # delay for change time
+            tm.sleep(0.5) # delay for change time
 
         except Exception as e:
             print(f"Hardware Error {e}")

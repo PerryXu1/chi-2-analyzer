@@ -4,7 +4,7 @@ from interface import Interface
 import numpy as np
 import time as tm
 
-SHOTS = 10
+SHOTS = 19
 V_AC_CALIBRATION_PASSES = 5 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
@@ -20,44 +20,49 @@ display = Display(title="Chi-2 Waveform")
 scope = Interface(instrument_num=1)
 scope.reset()
 
-V_ac = 300
+V_ac = None
 
 chi2_array = []
 
 for i in range(SHOTS):
-    # if i % V_AC_CALIBRATION_PASSES == 0:
-    #     scope.set_screen(channel=1,
-    #                     volts_per_div=50e-3,
-    #                     time_per_div=1e-3,
-    #                     vertical_offset=0,
-    #                     horizontal_offset=0,
-    #                     trigger_level=0,
-    #                     ext_trigger=False)
-    #     V_ac = 1000 * scope.get_amplitude(channel=1)
+    if i % V_AC_CALIBRATION_PASSES == 0:
+        scope.set_screen(channel=1,
+                        volts_per_div=100e-3,
+                        time_per_div=1e-3,
+                        vertical_offset=0,
+                        horizontal_offset=0,
+                        trigger_level=0,
+                        ext_trigger=False)
+        V_ac = 1000 * scope.get_amplitude(channel=1)
 
-    #     scope.set_screen(channel=2,
-    #                     volts_per_div=50e-3,
-    #                     time_per_div=1e-3,
-    #                     vertical_offset=0,
-    #                     horizontal_offset=0,
-    #                     trigger_level=2,
-    #                     ext_trigger=True)
+        scope.set_screen(channel=2,
+                        volts_per_div=100e-3,
+                        time_per_div=1e-3,
+                        vertical_offset=0,
+                        horizontal_offset=0,
+                        trigger_level=2,
+                        ext_trigger=True)
 
     time, voltage = scope.acquire_signal(channel=2)
-    tm.sleep(2)
-    chi2 = analyzer.analyze(time=time,
+    chi2, max_in, min_in = analyzer.analyze(time=time,
                             voltage=voltage,
                             window_size=50,
                             dominant_sweep_factor=4,
                             discontinuity_exclusion_factor=0.8,
-                            discontinuity_exclusion_optima=6,
+                            discontinuity_exclusion_optima=10,
                             modulation_sweep_factor=4,
                             modulation_overlap_factor=8,
                             prominence=0.01,
-                            debug=False)
+                            debug=True)
     
-    chi2_array.extend(chi2)
+    display.visualize_waveform(time=time, voltage=voltage, modulation_optima_indices=chi2, max_indices=max_in, min_indices=min_in)
+    
+    # chi2_array.extend(chi2)
     
 scope.close()
 
-print(chi2_array)
+# chi2_array = np.array(chi2_array)
+# chi2_array *= 1e12
+# print(chi2_array)
+# print(np.mean(chi2_array))
+# print(np.std(chi2_array))

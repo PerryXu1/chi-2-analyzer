@@ -240,12 +240,12 @@ class Analyzer:
         """
         array_size = len(voltage)
         
-        start_idx = max(0, mid_index - search_radius)
-        end_idx = min(array_size, mid_index + search_radius)
+        start_idx = int(max(0, mid_index - search_radius))
+        end_idx = int(min(array_size, mid_index + search_radius))
         
         # Slices overlap past the midpoint index using the overlap_radius parameter
-        left_slice = voltage[start_idx : min(array_size, mid_index + overlap_radius)]
-        right_slice = voltage[max(0, mid_index - overlap_radius) : end_idx]
+        left_slice = voltage[start_idx : int(min(array_size, mid_index + overlap_radius))]
+        right_slice = voltage[int(max(0, mid_index - overlap_radius)) : end_idx]
         
         full_start = start_idx
         full_end = end_idx
@@ -279,13 +279,13 @@ class Analyzer:
         if len(r_peaks) > 0:
             max_R = r_peaks[0]
         else:
-            right_base_idx = max(0, mid_index - overlap_radius)
+            right_base_idx = int(max(0, mid_index - overlap_radius))
             max_R = right_base_idx + int(np.argmax(right_slice))
             
         if len(r_troughs) > 0:
             min_R = r_troughs[0]
         else:
-            right_base_idx = max(0, mid_index - overlap_radius)
+            right_base_idx = int(max(0, mid_index - overlap_radius))
             min_R = right_base_idx + int(np.argmin(right_slice))
         
         # 3. Calculate absolute distances to midpoint
@@ -297,28 +297,28 @@ class Analyzer:
         if mode == ModulationMode.PEAK_TO_TROUGH: # max on left and min on right expected
             if dist_max_L <= dist_min_L and dist_min_R <= dist_max_R:
                 # CASE: midpoint perfectly within cycle
-                return max_L, min_R
+                return int(max_L), int(min_R)
             else:
                 # CASE: midpoint between cycles
                 if dist_min_L < dist_max_R:
                     # left cycle boundary is closer, return its peak and trough
-                    return max_L, min_L
+                    return int(max_L), int(min_L)
                 else:
                     # right cycle boundary is closer, return its peak and trough
-                    return max_R, min_R
+                    return int(max_R), int(min_R)
                     
         elif mode == ModulationMode.TROUGH_TO_PEAK: # min on left and max on right expected
             if dist_min_L <= dist_max_L and dist_max_R <= dist_min_R:
                 # CASE: midpoint perfectly within cycle
-                return max_R, min_L
+                return int(max_R), int(min_L)
             else:
                 # CASE: midpoint between cycles
                 if dist_max_L < dist_min_R:
                     # left cycle boundary is closer, return its peak and trough
-                    return max_L, min_L
+                    return int(max_L), int(min_L)
                 else:
                     # right cycle boundary is closer, return its peak and trough
-                    return max_R, min_R
+                    return int(max_R), int(min_R)
 
     def analyze(self, *, time: NDArray[float64], voltage: NDArray[float64],
                 window_size: int = 50, dominant_sweep_factor: float = 4,
@@ -406,7 +406,7 @@ class Analyzer:
                     min_index_num += 1
             else:
                 if max_index_array[max_index_num] < min_index_array[min_index_num]:
-                    if prev_optima != Optima.MAXIMA:
+                    if prev_optima != Optima.MAXIMA and min_index_array[min_index_num] - max_index_array[max_index_num] < period_index_offset * (0.5 + 1 / dominant_sweep_factor):
                         candidate_mid = int((max_index_array[max_index_num] + min_index_array[min_index_num]) / 2)
                         
                         v_start = max(0, candidate_mid - sweep_radius)
@@ -424,7 +424,7 @@ class Analyzer:
                         
                     max_index_num += 1
                 elif max_index_array[max_index_num] > min_index_array[min_index_num]:
-                    if prev_optima != Optima.MINIMA:
+                    if prev_optima != Optima.MINIMA and max_index_array[min_index_num] - min_index_array[max_index_num] < period_index_offset * (0.5 + 1 / dominant_sweep_factor):
                         candidate_mid = int((max_index_array[max_index_num] + min_index_array[min_index_num]) / 2)
                         
                         v_start = max(0, candidate_mid - sweep_radius)
@@ -477,6 +477,8 @@ class Analyzer:
             
         modulation_max_indices = np.array(modulation_max_indices)
         modulation_min_indices = np.array(modulation_min_indices)
+
+        if len(modulation_max_indices) == 0 or len(modulation_min_indices) == 0
             
         modulation_amplitudes = voltage[modulation_max_indices] - voltage[modulation_min_indices]
         voltage_ratio = np.abs(modulation_amplitudes / dominant_amplitudes)
@@ -489,4 +491,4 @@ class Analyzer:
         if not debug:
             return chi2.tolist()
         else:
-            return np.append(modulation_max_indices, modulation_min_indices)
+            return (np.append(modulation_max_indices, modulation_min_indices), max_index_array, min_index_array)
