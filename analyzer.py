@@ -416,6 +416,7 @@ class Analyzer:
                         pks, _ = find_peaks(validation_slice, prominence=prominence)
                         trs, _ = find_peaks(-validation_slice, prominence=prominence)
                         local_oscillations = len(pks) + len(trs)
+                        print(local_oscillations)
                         
                         if local_oscillations >= discontinuity_exclusion_optima:
                             phase_change_index_array.append(candidate_mid)
@@ -424,7 +425,7 @@ class Analyzer:
                         
                     max_index_num += 1
                 elif max_index_array[max_index_num] > min_index_array[min_index_num]:
-                    if prev_optima != Optima.MINIMA and max_index_array[min_index_num] - min_index_array[max_index_num] < period_index_offset * (0.5 + 1 / dominant_sweep_factor):
+                    if prev_optima != Optima.MINIMA and max_index_array[max_index_num] - min_index_array[min_index_num] < period_index_offset * (0.5 + 1 / dominant_sweep_factor):
                         candidate_mid = int((max_index_array[max_index_num] + min_index_array[min_index_num]) / 2)
                         
                         v_start = max(0, candidate_mid - sweep_radius)
@@ -434,6 +435,7 @@ class Analyzer:
                         pks, _ = find_peaks(validation_slice, prominence=prominence)
                         trs, _ = find_peaks(-validation_slice, prominence=prominence)
                         local_oscillations = len(pks) + len(trs)
+                        print(local_oscillations)
                         
                         if local_oscillations >= discontinuity_exclusion_optima:
                             phase_change_index_array.append(candidate_mid)

@@ -34,11 +34,11 @@ for i in range(SHOTS):
         V_ac = 1000 * scope.get_amplitude(channel=1)
 
         scope.set_screen(channel=2,
-                        volts_per_div=100e-3,
+                        volts_per_div=50e-3,
                         time_per_div=1e-3,
-                        vertical_offset=0,
+                        vertical_offset=100e-3,
                         horizontal_offset=0,
-                        trigger_level=2,
+                        trigger_level=2.5,
                         ext_trigger=True)
 
     time, voltage = scope.acquire_signal(channel=2)
@@ -46,10 +46,10 @@ for i in range(SHOTS):
                             voltage=voltage,
                             window_size=50,
                             dominant_sweep_factor=4,
-                            discontinuity_exclusion_factor=0.8,
-                            discontinuity_exclusion_optima=10,
-                            modulation_sweep_factor=4,
-                            modulation_overlap_factor=8,
+                            discontinuity_exclusion_factor=0.7,
+                            discontinuity_exclusion_optima=14,
+                            modulation_sweep_factor=5,
+                            modulation_overlap_factor=10,
                             prominence=0.01,
                             debug=True)
     
