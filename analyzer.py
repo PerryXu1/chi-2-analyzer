@@ -324,6 +324,7 @@ class Analyzer:
                 window_size: int = 50, dominant_sweep_factor: float = 4,
                 discontinuity_exclusion_factor: float = 0.8, discontinuity_exclusion_optima= 6,
                 modulation_sweep_factor: float = 4, modulation_overlap_factor: float = 8, prominence: float = 0.01,
+                voltage_ratio_acceptance: float = 0.8,
                 debug: bool = False) -> list:
         """Gets the chi-2 of PPSF through oscilloscope data and other parameters through
         algorithmically finding specific optima of the data
@@ -357,6 +358,11 @@ class Analyzer:
         :type modulation_overlap_factor: float
         :param prominence: required vertical height the local feature must stand out. Measured in Volts (V)
         :type prominence: float
+        :param voltage_ratio_acceptance: The maximum voltage ratio (deltaV/Vmax) the algorithm will output as a valid result.
+            Anything greater is assumed to be an erroneous measurement, likely due to discontinuities. It is recommended
+            to choose a voltage ratio much greater than modulation amplitude. If modulation amplitudes are very large, it is
+            recommended to reduce the AC voltage until erroneous measurements far exceed modulation amplitudes
+        :type voltage_ratio_acceptance: float. Between 0 and 1
         :param debug: if debug is true, the function will return the modulation maxima and minima. Used to
             visualize calibrate the analysis parameters
         :type debug: boolean
@@ -490,7 +496,8 @@ class Analyzer:
         else:
             modulation_amplitudes = voltage[modulation_max_indices] - voltage[modulation_min_indices]
             voltage_ratio = np.abs(modulation_amplitudes / dominant_amplitudes)
-        
+            voltage_ratio[voltage_ratio > voltage_ratio_acceptance] = np.nan
+            
             chi2 = chi2_coeff * np.arcsin(voltage_ratio)
             chi2 = chi2[~np.isnan(chi2)]
         
