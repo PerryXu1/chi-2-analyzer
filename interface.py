@@ -55,18 +55,22 @@ class Interface:
         
         try:
             self.scope.write("*CLS")
-            
-            # DIGITIZE to freeze display buffer
-            self.scope.write(f":DIGITIZE CHANNEL{channel}")
-            self.scope.write(f":DIGITIZE CHANNEL")
-            
+
+            self.scope.write(":ACQUIRE:TYPE NORMAL")
+            self.scope.write(":ACQUIRE:COMPLETE 100")
+
             # configure data transfer to get bytes from selected channel
             self.scope.write(f":WAVEFORM:SOURCE CHANNEL{channel}")
             self.scope.write(":WAVEFORM:FORMAT BYTE")
             
+            # DIGITIZE to freeze display buffer
+            self.scope.write(f":DIGITIZE CHANNEL{channel}")
+            
+            print("A")
             # get preamble parameters
             preamble = self.scope.query(":WAVEFORM:PREAMBLE?").split(',')
 
+            print("B")
             num_points = float(preamble[2])
 
             x_increment = float(preamble[4])
@@ -77,9 +81,11 @@ class Interface:
             y_origin = float(preamble[8])
             y_reference = float(preamble[9])
 
+            print("C")
+
             # get raw data
-            self.scope.write(":WAVEFORM:DATA?")
-            raw_voltage = self.scope.read_binary_values(datatype='B', container=np.array)
+            # raw_voltage = self.scope.query(":WAVEFORM:DATA?")
+            raw_voltage = self.scope.query_binary_values(":WAVEFORM:DATA?", datatype='B', container=np.array)
             raw_time = np.arange(num_points)
 
             # convert to time and voltage arrays
@@ -109,6 +115,7 @@ class Interface:
 
             self.scope.write(f":MEASURE:SOURCE CHANNEL{channel}")
             vpp = float(self.scope.query(":MEASURE:VPP?"))
+            print(vpp)
 
             return vpp
 
@@ -173,7 +180,7 @@ class Interface:
             self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
 
 
-            time.sleep(0.1) # delay for change time
+            time.sleep(1) # delay for change time
 
         except Exception as e:
             print(f"Hardware Error {e}")

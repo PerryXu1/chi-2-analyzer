@@ -18,7 +18,7 @@ for i in range(3):
                          vertical_offset=0,
                          horizontal_offset=0,
                          trigger_level=2,
-                         ext_trigger=True)
+                         ext_trigger=False)
     time.sleep(2)
 
 interface.close()

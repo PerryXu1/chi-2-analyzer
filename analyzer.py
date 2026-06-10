@@ -324,7 +324,7 @@ class Analyzer:
                 window_size: int = 50, dominant_sweep_factor: float = 4,
                 discontinuity_exclusion_factor: float = 0.8, discontinuity_exclusion_optima= 6,
                 modulation_sweep_factor: float = 4, modulation_overlap_factor: float = 8, prominence: float = 0.01,
-                debug: bool = False) -> NDArray:
+                debug: bool = False) -> list:
         """Gets the chi-2 of PPSF through oscilloscope data and other parameters through
         algorithmically finding specific optima of the data
         
@@ -373,10 +373,11 @@ class Analyzer:
         period_index_offset = int(round(period/time_step))
 
         # smooth out the voltage
-        smoothed_voltage = self._smooth_voltage(window_size)
+        smoothed_voltage = self._smooth_voltage(voltage, window_size)
         
         # getting min/max of dominant sinusoid
-        max_index_array, min_index_array = self._get_optima(voltage=smoothed_voltage,
+        max_index_array, min_index_array = self._get_optima(voltage=voltage,
+                                                            smoothed_voltage=smoothed_voltage,
                                                             array_size=array_size,
                                                             period_index_offset=period_index_offset,
                                                             max_min_epsilon_factor=dominant_sweep_factor,
@@ -463,6 +464,7 @@ class Analyzer:
                     mode = ModulationMode.PEAK_TO_TROUGH
             
             local_max_idx, local_min_idx = self._get_modulation_extrema(
+                voltage=voltage,
                 mid_index=phase_change_index, 
                 search_radius=sweep_radius,
                 overlap_radius=int(round(sweep_radius/modulation_overlap_factor)),
@@ -485,6 +487,6 @@ class Analyzer:
         chi2 = chi2[~np.isnan(chi2)]
         
         if not debug:
-            return chi2
+            return chi2.tolist()
         else:
             return np.append(modulation_max_indices, modulation_min_indices)
