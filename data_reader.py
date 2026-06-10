@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-chi2 = np.loadtxt("results.txt")
+chi2 = 1e12 * np.loadtxt("results.txt")
 
 median = np.median(chi2)
 std = np.std(chi2, ddof=1)
@@ -31,7 +31,7 @@ plt.axvline(
 
 # Label the chart
 plt.title(r"Distribution of $\chi^2$ Values", fontsize=14)
-plt.xlabel(r"$\chi^2$ Value", fontsize=12)
+plt.xlabel(r"$\chi^2$ Value (pm/V)", fontsize=12)
 plt.ylabel("Frequency (Counts)", fontsize=12)
 plt.grid(axis="y", linestyle="--", alpha=0.5)
 plt.legend()

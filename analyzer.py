@@ -422,7 +422,6 @@ class Analyzer:
                         pks, _ = find_peaks(validation_slice, prominence=prominence)
                         trs, _ = find_peaks(-validation_slice, prominence=prominence)
                         local_oscillations = len(pks) + len(trs)
-                        print(local_oscillations)
                         
                         if local_oscillations >= discontinuity_exclusion_optima:
                             phase_change_index_array.append(candidate_mid)
@@ -441,7 +440,6 @@ class Analyzer:
                         pks, _ = find_peaks(validation_slice, prominence=prominence)
                         trs, _ = find_peaks(-validation_slice, prominence=prominence)
                         local_oscillations = len(pks) + len(trs)
-                        print(local_oscillations)
                         
                         if local_oscillations >= discontinuity_exclusion_optima:
                             phase_change_index_array.append(candidate_mid)
