@@ -51,6 +51,7 @@ for i in range(SHOTS):
                             modulation_sweep_factor=5,
                             modulation_overlap_factor=10,
                             prominence=0.01,
+                            voltage_ratio_acceptance=0.7,
                             debug=True)
     
     display.visualize_waveform(time=time, voltage=voltage, modulation_optima_indices=chi2, max_indices=max_in, min_indices=min_in)
