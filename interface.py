@@ -45,7 +45,7 @@ class Interface:
             return False
 
     def acquire_signal(self, *, channel: int = 2) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
-        """Captures a waveform from the specified channel and returns scaled voltages as a NumPy ndarray.
+        """Captures a waveform from the specified channel and returns the time and voltage arrays
         
         :param channel: Channel number to read. Default is 2
         :type channel: int

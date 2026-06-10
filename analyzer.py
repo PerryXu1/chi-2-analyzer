@@ -43,10 +43,6 @@ class Optima(Enum):
 class Analyzer:
     """Class of methods used to analyze an input signal waveform and calculate the chi-2
     
-    :param time: array of times from the oscilloscope
-    :type time: np ndarray
-    :param voltage: array of voltage samples from the oscilloscope
-    :type voltage: np ndarray
     :param core_index: refractive index of the fibre core
     :type core_index: float
     :param wavelength: wavelength of light coupled into the PPSF
@@ -59,12 +55,10 @@ class Analyzer:
     :type length: float
     :param driver_frequency: frequency of the signal used to drive the piezo phase modulator. Frequency of larger wave
     :type driver_frequency: float
-    :param phase_mod_cycles: The amount of 2pi phase cycles the piezo phase modulator moves through in one input signal cycle
+    :param phase_mod_cycles: the amount of 2pi phase cycles the piezo phase modulator moves through in one input signal cycle
     :type phase_mod_cycles: float
     """
     
-    time: NDArray[float64]
-    voltage: NDArray[float64]
     core_index: float
     wavelength: float
     eff_distance: float
@@ -73,12 +67,10 @@ class Analyzer:
     driver_frequency: float
     phase_mod_cycles: float
     
-    def __init__(self, time: NDArray[float64], voltage: NDArray[float64], *,
+    def __init__(self, *,
                  core_index: float = 1.52, wavelength: float = 1550e-9, eff_distance: float = 33e-6,
-                 ac_voltage: float = 1200, length: float = 0.3, driver_frequency: float = 100,
+                 ac_voltage: float = 240, length: float = 0.3, driver_frequency: float = 100,
                  phase_mod_cycles = 2.5):
-        self.time = time
-        self.voltage = voltage
         self.core_index = core_index
         self.wavelength = wavelength
         self.eff_distance = eff_distance
@@ -86,17 +78,30 @@ class Analyzer:
         self.length = length
         self.driver_frequency = driver_frequency
         self.phase_mod_cycles = phase_mod_cycles # technically may not be needed
+
+    def set_ac_voltage(self, ac_voltage: float) -> None:
+        """Sets the ac voltage. Not necessary, but useful to account for jitter and noise for precision measurements
+
+        :param ac_voltage: The new ac_voltage to be set to
+        :type ac_voltage: float
+        """
+        self.ac_voltage = ac_voltage
         
-    def _get_optima(self, *, voltage: NDArray[float64], array_size: int, period_index_offset: int,
+    def _get_optima(self, *, voltage: NDArray[float64],
+                    smoothed_voltage: NDArray[float64], array_size: int, period_index_offset: int,
                     max_min_epsilon_factor: float,
                     discontinuity_exclusion_factor) -> tuple[NDArray[float64], NDArray[float64]]:
         """Helper function to get the max/min of the larger dominant sinusoid
         
-        :param voltage: array of voltage values. This is typically an altered version of the original signal smoothed with a moving average
-        :type voltage: np ndarray
-        :param array_size: Size of the time array
+        :param time: array of times from the oscilloscope. Default is None
+        :type time: NDArray[float64]
+        :param voltage: array of voltage samples from the oscilloscope
+        :type voltage: NDArray[float64]
+        :param smoothed_voltage: array of voltage values. This is typically an altered version of the original signal smoothed with a moving average
+        :type smoothed_voltage: np ndarray
+        :param array_size: size of the time array
         :type array_size: int
-        :param period_index_offset: The change in indices of the time array between 1 period
+        :param period_index_offset: the change in indices of the time array between 1 period
         :type period_index_offset: int
         :param max_min_epsilon_factor: from the guess, the analyzer sweeps period/max_min_epsilon_factor
             on both sides to find the true max/min. Default sweeps period/8
@@ -108,11 +113,11 @@ class Analyzer:
         """
         
         # Get approximate min and max guesses
-        global_max_index = np.argmax(self.voltage)
-        global_min_index = np.argmin(self.voltage)
+        global_max_index = np.argmax(voltage)
+        global_min_index = np.argmin(voltage)
         
-        max_amplitude = (self.voltage[global_max_index] - self.voltage[global_min_index])/2
-        midline = self.voltage[global_min_index] + max_amplitude
+        max_amplitude = (voltage[global_max_index] - voltage[global_min_index])/2
+        midline = voltage[global_min_index] + max_amplitude
         maxima_exclusion_bound = midline + discontinuity_exclusion_factor * max_amplitude
         minima_exclusion_bound = midline - discontinuity_exclusion_factor * max_amplitude
         
@@ -145,9 +150,9 @@ class Analyzer:
 
         for idx, max_guess_index in enumerate(max_guess_index_array):
             true_max_index = max_guess_index
-            true_max = voltage[max_guess_index]
+            true_max = smoothed_voltage[max_guess_index]
 
-            if max_guess_index == first_max_index and self.voltage[max_guess_index] >= maxima_exclusion_bound:
+            if max_guess_index == first_max_index and voltage[max_guess_index] >= maxima_exclusion_bound:
                 max_index_array.append(max_guess_index)
 
             else:
@@ -161,18 +166,18 @@ class Analyzer:
                     stop = max_guess_index + sweep_radius
 
                 for sweep_index in range(start, stop):
-                    if voltage[sweep_index] > true_max:
-                        true_max = voltage[sweep_index]
+                    if smoothed_voltage[sweep_index] > true_max:
+                        true_max = smoothed_voltage[sweep_index]
                         true_max_index = sweep_index
                 
-                if self.voltage[true_max_index] >= maxima_exclusion_bound:
+                if voltage[true_max_index] >= maxima_exclusion_bound:
                     max_index_array.append(true_max_index)
 
         for idx, min_guess_index in enumerate(min_guess_index_array):
             true_min_index = min_guess_index
-            true_min = voltage[min_guess_index]
+            true_min = smoothed_voltage[min_guess_index]
 
-            if min_guess_index == first_min_index and self.voltage[min_guess_index] <= minima_exclusion_bound:
+            if min_guess_index == first_min_index and voltage[min_guess_index] <= minima_exclusion_bound:
                 min_index_array.append(min_guess_index)
             
             else:
@@ -186,34 +191,39 @@ class Analyzer:
                     stop = min_guess_index + sweep_radius
 
                 for sweep_index in range(start, stop):
-                    if voltage[sweep_index] < true_min:
-                        true_min = voltage[sweep_index]
+                    if smoothed_voltage[sweep_index] < true_min:
+                        true_min = smoothed_voltage[sweep_index]
                         true_min_index = sweep_index
                 
-                if self.voltage[true_min_index] <= minima_exclusion_bound:
+                if voltage[true_min_index] <= minima_exclusion_bound:
                     min_index_array.append(true_min_index)
 
         return max_index_array, min_index_array
 
-    def _smooth_voltage(self, window_size: int) -> NDArray[np.float64]:
+    def _smooth_voltage(self, voltage: NDArray[float64], window_size: int) -> NDArray[float64]:
         """Smooths the raw voltage trace using an ultra-fast 1D uniform filter
 
-        :param window_size: The number of data points to include in the moving average window
+        :param voltage: array of voltage samples from the oscilloscope
+        :type voltage: NDArray[float64]
+        :param window_size: the number of data points to include in the moving average window
         :type window_size: int
 
         :return: A 1D array containing the high-speed smoothed voltage trace
-        :rtype: NDArray[np.float64]
+        :rtype: NDArray[float64]
         """
 
-        smoothed_voltage = ndi.uniform_filter1d(self.voltage, size=window_size)
+        smoothed_voltage = ndi.uniform_filter1d(voltage, size=window_size)
         
         return smoothed_voltage
 
-    def _get_modulation_extrema(self, mid_index: int, search_radius: int, overlap_radius: int,
+    def _get_modulation_extrema(self, voltage: NDArray[float64],
+                                mid_index: int, search_radius: int, overlap_radius: int,
                                 mode: ModulationMode, prominence: float = 0.01) -> tuple[int, int]:
         """Finds the correct high-frequency carrier modulation extrema (max and min) near a midpoint.
         Handles edge cases where the midpoint falls into the gap between two modulation cycles.
 
+        :param voltage: array of voltage samples from the oscilloscope
+        :type voltage: NDArray[float64]
         :param mid_index: the array index of the calculated midpoint.
         :type mid_index: int
         :param search_radius: maximum number of array indices to search left and right.
@@ -228,18 +238,18 @@ class Analyzer:
         :return: a tuple containing (left_optimum_index, right_optimum_index)
         :rtype: tuple[int, int]
         """
-        array_size = len(self.voltage)
+        array_size = len(voltage)
         
         start_idx = max(0, mid_index - search_radius)
         end_idx = min(array_size, mid_index + search_radius)
         
         # Slices overlap past the midpoint index using the overlap_radius parameter
-        left_slice = self.voltage[start_idx : min(array_size, mid_index + overlap_radius)]
-        right_slice = self.voltage[max(0, mid_index - overlap_radius) : end_idx]
+        left_slice = voltage[start_idx : min(array_size, mid_index + overlap_radius)]
+        right_slice = voltage[max(0, mid_index - overlap_radius) : end_idx]
         
         full_start = start_idx
         full_end = end_idx
-        full_slice = self.voltage[full_start:full_end]
+        full_slice = voltage[full_start:full_end]
         
         all_peaks, _ = find_peaks(full_slice, prominence=prominence)
         all_troughs, _ = find_peaks(-full_slice, prominence=prominence)
@@ -310,25 +320,30 @@ class Analyzer:
                     # right cycle boundary is closer, return its peak and trough
                     return max_R, min_R
 
-    def analyze(self, *, window_size: int = 50, dominant_sweep_factor: float = 4,
+    def analyze(self, *, time: NDArray[float64], voltage: NDArray[float64],
+                window_size: int = 50, dominant_sweep_factor: float = 4,
                 discontinuity_exclusion_factor: float = 0.8, discontinuity_exclusion_optima= 6,
                 modulation_sweep_factor: float = 4, modulation_overlap_factor: float = 8, prominence: float = 0.01,
                 debug: bool = False) -> NDArray:
         """Gets the chi-2 of PPSF through oscilloscope data and other parameters through
         algorithmically finding specific optima of the data
         
-        :param window_size: The number of data points to include in the moving average window. Used to find the dominant optima and midpoints
+        :param time: array of times from the oscilloscope. Default is None
+        :type time: NDArray[float64]
+        :param voltage: array of voltage samples from the oscilloscope
+        :type voltage: NDArray[float64]
+        :param window_size: the number of data points to include in the moving average window. Used to find the dominant optima and midpoints
         :type window_size: int
         :param dominant_sweep_factor: from the guess, the analyzer sweeps period/dominant_sweep_factor
             on both sides to find the true max/min. Default sweeps period/4
         :type dominant_sweep_factor: float
-        :param discontinuity_exclusion_factor: When finding optima, the algorithm will ignore any
+        :param discontinuity_exclusion_factor: when finding optima, the algorithm will ignore any
             optima with an amplitude less than discontinuity_exclusion_factor * max_amplitude,
             where max_amplitude is global_max - global_min, which is a rough amplitude approximation
             Used to filter out discontinuities that align with optima, which can distort the optima
             and thus the chi2. Default is 0.8
         :type discontinuity_exclusion_factor: float
-        :param discontinuity_exclusion_optima: The minimum amount of optima required to be found within
+        :param discontinuity_exclusion_optima: the minimum amount of optima required to be found within
             the midpoint sweep (determined by modulation_sweep factor) for that midpoint to be considered
             a true max phase change point. Used to filter out discontinuities that align with midpoints
             between optima, which destroys the modulation oscillations and thus distort the chi2.
@@ -347,14 +362,14 @@ class Analyzer:
         :type debug: boolean
         
         :return: array of chi-2 values calculated from the data. One for each full interval between peak and trough.
-            If ijn debug mode, an array of indices corresponding to modulation optima will be returned.
-        :rtype: np ndarray
+            If in debug mode, an array of indices corresponding to modulation optima will be returned.
+        :rtype: NDArray[float64]
         """
 
         # pre-processing
-        array_size = len(self.time)
+        array_size = len(time)
         period = 1 / (self.phase_mod_cycles * self.driver_frequency)
-        time_step = self.time[1] - self.time[0] # can also use XINCR from the scope
+        time_step = time[1] - time[0] # can also use XINCR from the scope
         period_index_offset = int(round(period/time_step))
 
         # smooth out the voltage
@@ -395,7 +410,7 @@ class Analyzer:
                         
                         v_start = max(0, candidate_mid - sweep_radius)
                         v_stop = min(array_size, candidate_mid + sweep_radius)
-                        validation_slice = self.voltage[v_start:v_stop]
+                        validation_slice = voltage[v_start:v_stop]
                         
                         pks, _ = find_peaks(validation_slice, prominence=prominence)
                         trs, _ = find_peaks(-validation_slice, prominence=prominence)
@@ -403,8 +418,8 @@ class Analyzer:
                         
                         if local_oscillations >= discontinuity_exclusion_optima:
                             phase_change_index_array.append(candidate_mid)
-                            dominant_amplitudes.append(self.voltage[max_index_array[max_index_num]]
-                                                        - self.voltage[min_index_array[min_index_num]])
+                            dominant_amplitudes.append(voltage[max_index_array[max_index_num]]
+                                                        - voltage[min_index_array[min_index_num]])
                         
                     max_index_num += 1
                 elif max_index_array[max_index_num] > min_index_array[min_index_num]:
@@ -413,7 +428,7 @@ class Analyzer:
                         
                         v_start = max(0, candidate_mid - sweep_radius)
                         v_stop = min(array_size, candidate_mid + sweep_radius)
-                        validation_slice = self.voltage[v_start:v_stop]
+                        validation_slice = voltage[v_start:v_stop]
                         
                         pks, _ = find_peaks(validation_slice, prominence=prominence)
                         trs, _ = find_peaks(-validation_slice, prominence=prominence)
@@ -421,8 +436,8 @@ class Analyzer:
                         
                         if local_oscillations >= discontinuity_exclusion_optima:
                             phase_change_index_array.append(candidate_mid)
-                            dominant_amplitudes.append(self.voltage[max_index_array[max_index_num]]
-                                                        - self.voltage[min_index_array[min_index_num]])
+                            dominant_amplitudes.append(voltage[max_index_array[max_index_num]]
+                                                        - voltage[min_index_array[min_index_num]])
                             
                     min_index_num += 1
         
@@ -461,7 +476,7 @@ class Analyzer:
         modulation_max_indices = np.array(modulation_max_indices)
         modulation_min_indices = np.array(modulation_min_indices)
             
-        modulation_amplitudes = self.voltage[modulation_max_indices] - self.voltage[modulation_min_indices]
+        modulation_amplitudes = voltage[modulation_max_indices] - voltage[modulation_min_indices]
         voltage_ratio = np.abs(modulation_amplitudes / dominant_amplitudes)
         
         chi2_coeff = (self.core_index * self.wavelength * self.eff_distance) / (np.pi * self.ac_voltage * self.length)
