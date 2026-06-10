@@ -1,6 +1,7 @@
 import pyvisa
 import numpy as np
 from numpy.typing import NDArray
+import time
 
 class Interface:
     """A class of methods to acquire data from an oscilloscope through GPIB. Allows for connection checking, and waveform collection.
@@ -11,40 +12,39 @@ class Interface:
     """
 
     instrument_num: int
-
+    
     def __init__(self, instrument_num: int = 1):
         self.instrument_num = instrument_num
 
-    def init_instrument(instrument_num: int) -> bool:
+        self.rm = pyvisa.ResourceManager()
+        visa_address = f"GPIB0::{self.instrument_num}::INSTR"
+        
+        self.scope = self.rm.open_resource(visa_address)
+        self.scope.timeout = 5000 
+        self.scope.read_termination = '\n'
+        self.write_termination = '\n'
+        
+        self.scope.write("*CLS")
+
+    def init_instrument(self) -> bool:
         """Checks for proper connection to oscilloscope
 
-        :param instrument_num: The instrument number of the oscilloscope, set through the scope
-        :type instrument num: int, between 1 and 30 inclusive
         :return: True if the scope is connected. False if not
         :rtype: bool
         """
-        rm = pyvisa.ResourceManager()
-        visa_address = "GPIB0::" + str(instrument_num) + "::INSTR"
         
-        try:
-            scope = rm.open_resource(visa_address)
+        try:      
+            self.scope.write("*CLS")
             
-            scope.timeout = 3000 # 3 second timeout limit
-            scope.read_termination = '\n'
-            scope.write_termination = '\n'
+            self.scope.query("*IDN?") # Test query
             
-            scope.query("*IDN?") # Test query
-            
-            scope.close()
             return True
             
         except pyvisa.errors.VisaIOError as e:
             print(f"\nNo connection between python and the oscilloscope: {e}")
             return False
-        finally:
-            rm.close()
 
-    def acquire_signal(self, channel: int = 2) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
+    def acquire_signal(self, *, channel: int = 2) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
         """Captures a waveform from the specified channel and returns scaled voltages as a NumPy ndarray.
         
         :param channel: Channel number to read. Default is 2
@@ -52,26 +52,20 @@ class Interface:
         :return: An array of times and a corresponding array of voltages
         :rtype: tuple[NDArray[np.float64], NDArray[np.float64]]
         """
-
-        rm = pyvisa.ResourceManager()
-        visa_address = f"GPIB0::{self.instrument_num}::INSTR"
         
         try:
-            scope = rm.open_resource(visa_address)
-            scope.timeout = 5000  # 5 second timeout window
-            scope.read_termination = '\n'
-            scope.write_termination = '\n'
+            self.scope.write("*CLS")
             
             # DIGITIZE to freeze display buffer
-            scope.write(f":DIGITIZE CHANNEL{channel}")
-            scope.write(f":DIGITIZE CHANNEL")
+            self.scope.write(f":DIGITIZE CHANNEL{channel}")
+            self.scope.write(f":DIGITIZE CHANNEL")
             
             # configure data transfer to get bytes from selected channel
-            scope.write(f":WAVEFORM:SOURCE CHANNEL{channel}")
-            scope.write(":WAVEFORM:FORMAT BYTE")
+            self.scope.write(f":WAVEFORM:SOURCE CHANNEL{channel}")
+            self.scope.write(":WAVEFORM:FORMAT BYTE")
             
             # get preamble parameters
-            preamble = scope.query(":WAVEFORM:PREAMBLE?").split(',')
+            preamble = self.scope.query(":WAVEFORM:PREAMBLE?").split(',')
 
             num_points = float(preamble[2])
 
@@ -84,22 +78,115 @@ class Interface:
             y_reference = float(preamble[9])
 
             # get raw data
-            scope.write(":WAVEFORM:DATA?")
-            raw_voltage = scope.read_binary_values(datatype='B', container=np.array)
+            self.scope.write(":WAVEFORM:DATA?")
+            raw_voltage = self.scope.read_binary_values(datatype='B', container=np.array)
             raw_time = np.arange(num_points)
 
             # convert to time and voltage arrays
             time = ((raw_time - x_reference) * x_increment) + x_origin
             voltage = ((raw_voltage - y_reference) * y_increment) + y_origin
             
-            scope.close()
             return (time, voltage)
 
         except pyvisa.errors.VisaIOError as e:
-            print(f"\nHardware IO Error: {e}")
+            print(f"Visa IO Error: {e}")
             return None
         except Exception as e:
             print(f"\nSystem Parsing Error: {e}")
             return None
+
+    def get_amplitude(self, *, channel: int = 1) -> float:
+        """Gets the amplitude of a waveform from the selected oscilloscope channel
+
+        :param channel: The channel from which the waveform is inputted. Default is 1
+        :type channel: int
+        :return: The amplitude of the waveform
+        :rtype: float
+        """
+
+        try:
+            self.scope.write("*CLS")
+
+            self.scope.write(f":MEASURE:SOURCE CHANNEL{channel}")
+            vpp = float(self.scope.query(":MEASURE:VPP?"))
+
+            return vpp
+
+        except Exception as e:
+            print(f"Failed Measurement: {e}")
+            return None
+
+    def set_screen(self, *, channel: int,
+                   volts_per_div: float, time_per_div: float,
+                   vertical_offset: float = 0, horizontal_offset: float = 0,
+                   trigger_level: float, ext_trigger: bool = False) -> None:
+        """Sets screen to the appropriate settings for proper data acquisition
+
+        :param channel: The channel from which the waveform is inputted. Default is 1
+        :type channel: int
+        :param volts_per_div: The volts per div setting on the oscilloscope screen
+        :type volts_per_div: float
+        :param time_per_div: The time per div setting on the oscilloscope screen
+        :type time_per_div: float
+        :param vertical_offset: The vertical offset setting on the oscilloscope screen. Default is 0.
+        :type vertical_offset: float
+        :param horizontal_offset: The horizontal offset setting on the oscilloscope screen. Default is 0.
+        :type horizontal_offset: float
+        :param trigger_level: The trigger level of either the internal or external trigger, based on the ext_trigger argument
+        :type trigger_level: float
+        :param ext_trigger: Determines whether the external trigger will be used (True) or not (False). Default is False
+        :type ext_trigger: bool
+
+        :return: None
+        """
+
+        vertical_range = volts_per_div * 8
+        horizontal_range = time_per_div * 10
+
+        try:
+            self.scope.write("*CLS")
+            # self.scope.write("*RST")
+
+            if channel == 1:
+                self.scope.write(":BLANK CHANNEL2")
+                self.scope.write(":VIEW CHANNEL1")
+            else:
+                self.scope.write(":BLANK CHANNEL1")
+                self.scope.write(":VIEW CHANNEL2")
+
+            # vertical settings
+            self.scope.write(f":CHANNEL{channel}:RANGE {vertical_range:.4f}")
+            self.scope.write(f":CHANNEL{channel}:OFFSET {vertical_offset:.4f}")
+            self.scope.write(f":CHANNEL{channel}:COUPLING DC")
+
+            # horizontal settings
+            self.scope.write(f":TIMEBASE:RANGE {horizontal_range:.4f}")
+            self.scope.write(f":TIMEBASE:DELAY {horizontal_offset:.4f}")
+
+            if ext_trigger == False:
+                self.scope.write(f":TRIGGER:SOURCE CHANNEL{channel}")
+            else:
+                self.scope.write(":TRIGGER:SOURCE EXTERNAL")
+                self.scope.write(":TRIGGER:SLOPE POSITIVE")
+
+            self.scope.write(":TRIGGER:MODE NORMAL")
+            self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
+
+
+            time.sleep(0.1) # delay for change time
+
+        except Exception as e:
+            print(f"Hardware Error {e}")
+
+    def reset(self) -> None:
+        """Resets the oscilloscope settings to default for consistency"""
+
+        self.scope.write("*RST")
+
+    def close(self) -> None:
+        """Clean up the bus link to the oscilloscope and resource manager"""
+
+        try:
+            self.scope.close()
         finally:
-            rm.close()
+            self.rm.close()
