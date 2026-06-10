@@ -2,7 +2,7 @@ from display import Display
 from analyzer import Analyzer
 from interface import Interface
 
-SHOTS = 100
+SHOTS = 20
 V_AC_CALIBRATION_PASSES = 10 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,

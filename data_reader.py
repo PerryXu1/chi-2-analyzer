@@ -7,8 +7,8 @@ median = np.median(chi2)
 std = np.std(chi2, ddof=1)
 
 # Print the values to the console
-print(f"Median: {median:.6f}")
-print(f"Standard Deviation: {std:.6f}")
+print(f"Median: {median:.6e}")
+print(f"Standard Deviation: {std:.6e}")
 
 # Create the histogram plot
 plt.figure(figsize=(8, 5))
@@ -26,7 +26,7 @@ plt.axvline(
     color="red",
     linestyle="dashed",
     linewidth=2,
-    label=f"Median: {median:.4f}",
+    label=f"Median: {median:.4e}",
 )
 
 # Label the chart
