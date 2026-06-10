@@ -59,8 +59,7 @@ for i in range(SHOTS):
     
 scope.close()
 
-# chi2_array = np.array(chi2_array)
-# chi2_array *= 1e12
-# print(chi2_array)
-# print(np.mean(chi2_array))
-# print(np.std(chi2_array))
+# if len(chi2_array) != 0:    
+#     with open("results.txt", "w") as file:
+#         for value in chi2_array:
+#             file.write(f"{value}\n")
