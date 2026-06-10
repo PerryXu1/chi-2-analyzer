@@ -15,6 +15,7 @@ class Interface:
     
     def __init__(self, instrument_num: int = 1):
         self.instrument_num = instrument_num
+
         self.rm = pyvisa.ResourceManager()
         visa_address = f"GPIB0::{self.instrument_num}::INSTR"
         
@@ -34,10 +35,6 @@ class Interface:
         
         try:      
             self.scope.write("*CLS")
-
-            self.scope.timeout = 5000 # 5 second timeout limit
-            self.scope.read_termination = '\n'
-            self.scope.write_termination = '\n'
             
             self.scope.query("*IDN?") # Test query
             
@@ -58,10 +55,6 @@ class Interface:
         
         try:
             self.scope.write("*CLS")
-
-            self.scope.timeout = 5000  # 5 second timeout window
-            self.scope.read_termination = '\n'
-            self.scope.write_termination = '\n'
             
             # DIGITIZE to freeze display buffer
             self.scope.write(f":DIGITIZE CHANNEL{channel}")
@@ -96,7 +89,7 @@ class Interface:
             return (time, voltage)
 
         except pyvisa.errors.VisaIOError as e:
-            print(f"\nHardware IO Error: {e}")
+            print(f"Visa IO Error: {e}")
             return None
         except Exception as e:
             print(f"\nSystem Parsing Error: {e}")
@@ -113,10 +106,6 @@ class Interface:
 
         try:
             self.scope.write("*CLS")
-
-            self.scope.timeout = 5000 # 5 second timeout limit
-            self.scope.read_termination = '\n'
-            self.scope.write_termination = '\n'
 
             self.scope.write(f":MEASURE:SOURCE CHANNEL{channel}")
             vpp = float(self.scope.query(":MEASURE:VPP?"))
@@ -154,47 +143,41 @@ class Interface:
         vertical_range = volts_per_div * 8
         horizontal_range = time_per_div * 10
 
-        rm = pyvisa.ResourceManager()
-        visa_address = f"GPIB0::{self.instrument_num}::INSTR"
-
         try:
-            scope = rm.open_resource(visa_address)
-            scope.timeout = 5000 # 5 second timeout limit
-            scope.read_termination = '\n'
-            scope.write_termination = '\n'
+            self.scope.write("*CLS")
+            self.scope.write("*RST")
 
             if channel == 1:
-                scope.write(":CHANNEL2:DISPLAY OFF")
-                scope.write(":CHANNEL1:DISPLAY ON")
+                self.scope.write(":CHANNEL2:DISPLAY OFF")
+                self.scope.write(":CHANNEL1:DISPLAY ON")
             else:
-                scope.write(":CHANNEL1:DISPLAY OFF")
-                scope.write(":CHANNEL2:DISPLAY ON")
+                self.scope.write(":CHANNEL1:DISPLAY OFF")
+                self.scope.write(":CHANNEL2:DISPLAY ON")
 
             # vertical settings
-            scope.write(f":CHANNEL{channel}:RANGE {vertical_range:.4f}")
-            scope.write(f":CHANNEL{channel}:OFFSET {vertical_offset:.4f}")
-            scope.write(f":CHANNEL{channel}:COUPLING DC")
+            self.scope.write(f":CHANNEL{channel}:RANGE {vertical_range:.4f}")
+            self.scope.write(f":CHANNEL{channel}:OFFSET {vertical_offset:.4f}")
+            self.scope.write(f":CHANNEL{channel}:COUPLING DC")
 
             # horizontal settings
-            scope.write(f":TIMEBASE:RANGE {horizontal_range:.4f}")
-            scope.write(f":TIMEBASE:DELAY {horizontal_offset:.4f}")
+            self.scope.write(f":TIMEBASE:RANGE {horizontal_range:.4f}")
+            self.scope.write(f":TIMEBASE:DELAY {horizontal_offset:.4f}")
 
             if ext_trigger == False:
-                scope.write(f":TRIGGER:SOURCE CHANNEL{channel}")
-                scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
+                self.scope.write(f":TRIGGER:SOURCE CHANNEL{channel}")
+                self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
             else:
-                scope.write(":TRIGGER:SOURCE EXTERNAL")
-                scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
-                scope.write(":TRIGGER:SLOPE POSITIVE")
+                self.scope.write(":TRIGGER:SOURCE EXTERNAL")
+                self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
+                self.scope.write(":TRIGGER:SLOPE POSITIVE")
 
             time.sleep(0.1) # delay for change time
-            scope.close()
 
         except Exception as e:
             print(f"Hardware Error {e}")
 
     def close(self) -> None:
-        """Clean up the bus links when the entire script exits"""
+        """Clean up the bus link to the oscilloscope and resource manager"""
 
         try:
             self.scope.close()
