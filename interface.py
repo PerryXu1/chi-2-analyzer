@@ -145,14 +145,14 @@ class Interface:
 
         try:
             self.scope.write("*CLS")
-            self.scope.write("*RST")
+            # self.scope.write("*RST")
 
             if channel == 1:
-                self.scope.write(":CHANNEL2:DISPLAY OFF")
-                self.scope.write(":CHANNEL1:DISPLAY ON")
+                self.scope.write(":BLANK CHANNEL2")
+                self.scope.write(":VIEW CHANNEL1")
             else:
-                self.scope.write(":CHANNEL1:DISPLAY OFF")
-                self.scope.write(":CHANNEL2:DISPLAY ON")
+                self.scope.write(":BLANK CHANNEL1")
+                self.scope.write(":VIEW CHANNEL2")
 
             # vertical settings
             self.scope.write(f":CHANNEL{channel}:RANGE {vertical_range:.4f}")
@@ -165,16 +165,23 @@ class Interface:
 
             if ext_trigger == False:
                 self.scope.write(f":TRIGGER:SOURCE CHANNEL{channel}")
-                self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
             else:
                 self.scope.write(":TRIGGER:SOURCE EXTERNAL")
-                self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
                 self.scope.write(":TRIGGER:SLOPE POSITIVE")
+
+            self.scope.write(":TRIGGER:MODE NORMAL")
+            self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
+
 
             time.sleep(0.1) # delay for change time
 
         except Exception as e:
             print(f"Hardware Error {e}")
+
+    def reset(self) -> None:
+        """Resets the oscilloscope settings to default for consistency"""
+
+        self.scope.write("*RST")
 
     def close(self) -> None:
         """Clean up the bus link to the oscilloscope and resource manager"""
