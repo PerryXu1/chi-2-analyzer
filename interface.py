@@ -65,10 +65,6 @@ class Interface:
             self.scope.write(f":WAVEFORM:SOURCE CHANNEL{channel}")
             self.scope.write(":WAVEFORM:FORMAT BYTE")
             
-            # DIGITIZE to freeze display buffer
-            # self.scope.write(f":DIGITIZE CHANNEL{channel}")
-            # self.scope.query("*OPC?")
-            
             # get preamble parameters
             preamble = self.scope.query(":WAVEFORM:PREAMBLE?").split(',')
 
@@ -83,7 +79,6 @@ class Interface:
             y_reference = float(preamble[9])
 
             # get raw data
-            # raw_voltage = self.scope.query(":WAVEFORM:DATA?")
             raw_voltage = self.scope.query_binary_values(":WAVEFORM:DATA?", datatype='B', container=np.array)
             raw_time = np.arange(num_points)
 
@@ -179,7 +174,7 @@ class Interface:
             self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
 
 
-            tm.sleep(0.5) # delay for change time
+            # tm.sleep(0.5) # delay for change time
 
         except Exception as e:
             print(f"Hardware Error {e}")

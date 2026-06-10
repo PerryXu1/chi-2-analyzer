@@ -477,18 +477,22 @@ class Analyzer:
             
         modulation_max_indices = np.array(modulation_max_indices)
         modulation_min_indices = np.array(modulation_min_indices)
-
-        if len(modulation_max_indices) == 0 or len(modulation_min_indices) == 0
-            
-        modulation_amplitudes = voltage[modulation_max_indices] - voltage[modulation_min_indices]
-        voltage_ratio = np.abs(modulation_amplitudes / dominant_amplitudes)
         
         chi2_coeff = (self.core_index * self.wavelength * self.eff_distance) / (np.pi * self.ac_voltage * self.length)
-        chi2 = chi2_coeff * np.arcsin(voltage_ratio)
-        
-        chi2 = chi2[~np.isnan(chi2)]
-        
-        if not debug:
-            return chi2.tolist()
+
+        if len(modulation_max_indices) == 0 or len(modulation_min_indices) == 0:
+            if not debug:
+                return []
+            else:
+                return [], max_index_array, min_index_array
         else:
-            return (np.append(modulation_max_indices, modulation_min_indices), max_index_array, min_index_array)
+            modulation_amplitudes = voltage[modulation_max_indices] - voltage[modulation_min_indices]
+            voltage_ratio = np.abs(modulation_amplitudes / dominant_amplitudes)
+        
+            chi2 = chi2_coeff * np.arcsin(voltage_ratio)
+            chi2 = chi2[~np.isnan(chi2)]
+        
+            if not debug:
+                return chi2.tolist()
+            else:
+                return (np.append(modulation_max_indices, modulation_min_indices), max_index_array, min_index_array)

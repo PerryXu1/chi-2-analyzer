@@ -1,8 +1,6 @@
 from display import Display
 from analyzer import Analyzer
 from interface import Interface
-import numpy as np
-import time as tm
 
 SHOTS = 19
 V_AC_CALIBRATION_PASSES = 5 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
