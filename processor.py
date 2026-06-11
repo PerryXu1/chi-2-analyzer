@@ -1,8 +1,8 @@
 from analyzer import Analyzer
 from interface import Interface
 
-SHOTS = 10000
-V_AC_CALIBRATION_PASSES = 10000 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
+SHOTS = 1000
+V_AC_CALIBRATION_PASSES = 100 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
                     wavelength=1550e-9,

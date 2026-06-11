@@ -29,7 +29,7 @@ for i in range(SHOTS):
                     trigger_level=0,
                     ext_trigger=False)
     AC_VOLTAGE = 1000 * scope.get_amplitude(channel=1)
-    AC_VOLTAGE = 240
+    AC_VOLTAGE = 240 #preset rn due to bad oscilloscope
 
     scope.set_screen(channel=2,
                     volts_per_div=50e-3,
