@@ -3,7 +3,7 @@ from analyzer import Analyzer
 from interface import Interface
 
 SHOTS = 20
-V_AC_CALIBRATION_PASSES = 5 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
+V_AC_CALIBRATION_PASSES = 10 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
                     wavelength=1550e-9,
@@ -48,8 +48,8 @@ for i in range(SHOTS):
                             dominant_sweep_factor=4,
                             discontinuity_exclusion_factor=0.7,
                             discontinuity_exclusion_optima=14,
-                            modulation_sweep_factor=5,
-                            modulation_overlap_factor=10,
+                            modulation_sweep_factor=4,
+                            modulation_overlap_factor=8,
                             prominence=0.01,
                             voltage_ratio_acceptance=0.7,
                             debug=True)

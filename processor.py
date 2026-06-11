@@ -1,9 +1,8 @@
-from display import Display
 from analyzer import Analyzer
 from interface import Interface
 
-SHOTS = 100
-V_AC_CALIBRATION_PASSES = 10 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
+SHOTS = 10000
+V_AC_CALIBRATION_PASSES = 10000 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
                     wavelength=1550e-9,
@@ -12,8 +11,6 @@ analyzer = Analyzer(core_index=1.52,
                     length=0.3,
                     driver_frequency=100,
                     phase_mod_cycles=2.5)
-
-display = Display(title="Chi-2 Waveform")
 
 scope = Interface(instrument_num=1)
 scope.reset()
@@ -32,7 +29,7 @@ for i in range(SHOTS):
                         trigger_level=0,
                         ext_trigger=False)
         V_ac = 1000 * scope.get_amplitude(channel=1)
-        V_ac = 240
+        V_ac = 240 # preset rn due to bad oscilloscope
         analyzer.set_ac_voltage(V_ac)
 
         scope.set_screen(channel=2,
@@ -50,8 +47,8 @@ for i in range(SHOTS):
                             dominant_sweep_factor=4,
                             discontinuity_exclusion_factor=0.7,
                             discontinuity_exclusion_optima=14,
-                            modulation_sweep_factor=5,
-                            modulation_overlap_factor=10,
+                            modulation_sweep_factor=4,
+                            modulation_overlap_factor=8,
                             prominence=0.01,
                             voltage_ratio_acceptance=0.7,
                             debug=False)

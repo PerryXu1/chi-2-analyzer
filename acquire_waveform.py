@@ -1,4 +1,3 @@
-from display import Display
 from analyzer import Analyzer
 from interface import Interface
 import numpy as np
@@ -8,7 +7,7 @@ POLING_LENGTH = 0.3
 EFFECTIVE_DISTANCE = 33e-6
 CORE_INDEX = 1.52
 
-SHOTS = 100
+SHOTS = 20
 
 analyzer = Analyzer(core_index=1.52,
                     wavelength=1550e-9,
@@ -17,8 +16,6 @@ analyzer = Analyzer(core_index=1.52,
                     length=0.3,
                     driver_frequency=100,
                     phase_mod_cycles=2.5)
-
-display = Display(title="Chi-2 Waveform")
 
 scope = Interface(instrument_num=1)
 scope.reset()
@@ -32,6 +29,7 @@ for i in range(SHOTS):
                     trigger_level=0,
                     ext_trigger=False)
     AC_VOLTAGE = 1000 * scope.get_amplitude(channel=1)
+    AC_VOLTAGE = 240
 
     scope.set_screen(channel=2,
                     volts_per_div=50e-3,
@@ -43,7 +41,7 @@ for i in range(SHOTS):
 
     time, voltage = scope.acquire_signal(channel=2)
     
-    filename = f"results{i+1:05d}.txt"
+    filename = f"waveform{i+1:05d}.txt"
 
     # Construct header line with all metadata parameters
     header_info = (
