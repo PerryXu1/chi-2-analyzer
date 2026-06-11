@@ -39,8 +39,8 @@ for i in range(SHOTS):
                         volts_per_div=50e-3,
                         time_per_div=1e-3,
                         vertical_offset=100e-3,
-                        horizontal_offset=0,
-                        trigger_level=2.5,
+                        horizontal_offset=5e-3,
+                        trigger_level=0,
                         ext_trigger=True)
 
     time, voltage = scope.acquire_signal(channel=2)

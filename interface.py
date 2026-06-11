@@ -145,7 +145,6 @@ class Interface:
 
         try:
             self.scope.write("*CLS")
-            # self.scope.write("*RST")
 
             if channel == 1:
                 self.scope.write(":BLANK CHANNEL2")
@@ -167,7 +166,7 @@ class Interface:
                 self.scope.write(f":TRIGGER:SOURCE CHANNEL{channel}")
             else:
                 self.scope.write(":TRIGGER:SOURCE EXTERNAL")
-                self.scope.write(":TRIGGER:SLOPE POSITIVE")
+                self.scope.write(":TRIGGER:SLOPE NEGATIVE")
 
             self.scope.write(":TRIGGER:MODE NORMAL")
             self.scope.write(f":TRIGGER:LEVEL {trigger_level:.4f}")
