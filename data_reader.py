@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-chi2 = 1e12 * np.loadtxt("results.txt")
+chi2 = 1e12 * np.loadtxt("results/chi2/chi2_results.txt", skiprows=2)
 
 median = np.median(chi2)
 std = np.std(chi2, ddof=1)
