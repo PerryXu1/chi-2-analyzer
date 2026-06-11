@@ -1,5 +1,12 @@
 from analyzer import Analyzer
 from interface import Interface
+import numpy as np
+
+WAVELENGTH = 1550e-9
+POLING_LENGTH = 0.3
+EFFECTIVE_DISTANCE = 33e-6
+CORE_INDEX = 1.52
+NOMINAL_AC_VOLTAGE = 240
 
 SHOTS = 1000
 V_AC_CALIBRATION_PASSES = 100 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
@@ -56,8 +63,23 @@ for i in range(SHOTS):
     chi2_array.extend(chi2)
     
 scope.close()
+chi2_array = np.array(chi2_array)
 
-if len(chi2_array) != 0:    
-    with open("results.txt", "w") as file:
-        for value in chi2_array:
-            file.write(f"{value}\n")
+filename = "chi2.txt"
+
+# Construct header line with all metadata parameters
+header_info = (
+    f"WAVELENGTH={WAVELENGTH}, EFFECTIVE_DISTANCE={EFFECTIVE_DISTANCE}, "
+    f"NOMINAL_AC_VOLTAGE={NOMINAL_AC_VOLTAGE}, POLING_LENGTH={POLING_LENGTH}, CORE_INDEX={CORE_INDEX}, NUM_SHOTS={SHOTS}\n"
+    f"Chi-(2) (m/V)"
+)
+
+data_matrix = np.column_stack((chi2_array))
+
+np.savetxt(
+    filename,
+    data_matrix,
+    delimiter=",",
+    header=header_info,
+    comments="",
+)
