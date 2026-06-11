@@ -2,7 +2,7 @@ from display import Display
 from analyzer import Analyzer
 from interface import Interface
 
-SHOTS = 20
+SHOTS = 100
 V_AC_CALIBRATION_PASSES = 10 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
@@ -32,6 +32,8 @@ for i in range(SHOTS):
                         trigger_level=0,
                         ext_trigger=False)
         V_ac = 1000 * scope.get_amplitude(channel=1)
+        V_ac = 240
+        analyzer.set_ac_voltage(V_ac)
 
         scope.set_screen(channel=2,
                         volts_per_div=50e-3,

@@ -109,7 +109,6 @@ class Interface:
 
             self.scope.write(f":MEASURE:SOURCE CHANNEL{channel}")
             vpp = float(self.scope.query(":MEASURE:VPP?"))
-            print(vpp)
 
             return vpp
 

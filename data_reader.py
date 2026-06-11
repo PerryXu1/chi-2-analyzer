@@ -37,3 +37,5 @@ plt.grid(axis="y", linestyle="--", alpha=0.5)
 plt.legend()
 
 plt.tight_layout()
+
+plt.show()
