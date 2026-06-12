@@ -27,7 +27,7 @@ CORE_INDEX = 1.52
 NOMINAL_AC_VOLTAGE = 240
 
 SHOTS = 1000
-V_AC_CALIBRATION_PASSES = 100 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
+V_AC_CALIBRATION_PASSES = 1000 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
                     wavelength=1550e-9,
@@ -92,11 +92,9 @@ header_info = (
     f"Chi-(2) (m/V)"
 )
 
-data_matrix = np.column_stack((chi2_array))
-
 np.savetxt(
     filename,
-    data_matrix,
+    chi2_array,
     delimiter=",",
     header=header_info,
     comments="",
