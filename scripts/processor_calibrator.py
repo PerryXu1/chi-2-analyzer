@@ -93,7 +93,7 @@ for i in range(SHOTS):
 
         scope.set_screen(channel=2,
                         volts_per_div=50e-3,
-                        time_per_div=1e-3,
+                        time_per_div=0.8e-3,
                         vertical_offset=100e-3,
                         horizontal_offset=5e-3,
                         trigger_level=0,
