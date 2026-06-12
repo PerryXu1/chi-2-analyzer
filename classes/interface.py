@@ -1,7 +1,6 @@
 import pyvisa
 import numpy as np
 from numpy.typing import NDArray
-import time as tm
 
 class Interface:
     """A class of methods to acquire data from an oscilloscope through GPIB. Allows for connection checking, and waveform collection.

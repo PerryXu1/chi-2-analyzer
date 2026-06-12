@@ -1,5 +1,13 @@
-from interface import Interface
+from classes.interface import Interface
 import time
+
+"""Script for testing communication between the computer and oscilloscope,
+    as well as the screen-setting capability of the code.
+    
+    Switches back and forth between two oscilloscope screen settings, as can be seen
+    in the code below. If the screen periodically switches between those two settings,
+    the oscilloscope and computer are properly communicating and the code is working.
+"""
 
 interface = Interface(instrument_num=1)
 interface.reset()

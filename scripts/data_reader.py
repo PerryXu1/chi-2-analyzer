@@ -1,6 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+"""Script to statistically analyze and display the chi-(2) distribution, calculated by processor.py
+
+    Calculates the median (more resistant to outliers) and the standard deviation of the data set.
+    Displays the distribution graphically through a histogram, also displaying the median.
+"""
+
+
 chi2 = 1e12 * np.loadtxt("results/chi2/chi2_results.txt", skiprows=2)
 
 median = np.median(chi2)
@@ -30,8 +37,8 @@ plt.axvline(
 )
 
 # Label the chart
-plt.title(r"Distribution of $\chi^2$ Values", fontsize=14)
-plt.xlabel(r"$\chi^2$ Value (pm/V)", fontsize=12)
+plt.title(r"Distribution of $\chi^{(2)}$ Values", fontsize=14)
+plt.xlabel(r"$\chi^{(2)}$ Value (pm/V)", fontsize=12)
 plt.ylabel("Frequency (Counts)", fontsize=12)
 plt.grid(axis="y", linestyle="--", alpha=0.5)
 plt.legend()

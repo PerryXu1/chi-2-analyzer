@@ -1,6 +1,24 @@
-from analyzer import Analyzer
-from interface import Interface
+from classes.analyzer import Analyzer
+from classes.interface import Interface
 import numpy as np
+
+"""Script that acquires chi2 signal waveforms from the oscilloscope, calculates
+    the chi2 from the waveform and other parameters, and saves it to a file.
+    
+    The script also sets the oscilloscope screen settings properly before getting a measurement,
+    so no need for manual oscilloscope calibration. The chi2 calculation algorithm may need
+    to be adjusted for different conditions, such as larger or more frequent modulation optima
+    per dominant period. This can be done through running processor_calibrator.py and visually
+    checking for approximate frequency and checking for errors. More can be found in the documentation
+    for that script.
+    
+    Alternatively, less nuanced calibration done can be done by running this file, and using
+    data_reader.py to find check the chi2 distribution. Ideally, with no algorithmic error, the
+    distribution of chi2 values should be a bell curve. When there are significant errors, there may
+    be another peak located to the left and/or right of the ideal bell curve. The reasoning for these
+    errors is found in processor_calibrator.py
+"""
+
 
 WAVELENGTH = 1550e-9
 POLING_LENGTH = 0.3
@@ -36,7 +54,7 @@ for i in range(SHOTS):
                         trigger_level=0,
                         ext_trigger=False)
         V_ac = 1000 * scope.get_amplitude(channel=1)
-        V_ac = 240 # preset rn due to bad oscilloscope
+        V_ac = 240 # preset for now due to bad oscilloscope
         analyzer.set_ac_voltage(V_ac)
 
         scope.set_screen(channel=2,

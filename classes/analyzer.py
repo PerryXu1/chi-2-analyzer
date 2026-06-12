@@ -1,7 +1,6 @@
 import numpy as np
 from numpy.typing import NDArray
 from numpy import float64
-from simulator import Simulator
 import scipy.ndimage as ndi
 from scipy.signal import find_peaks
 from enum import Enum

@@ -1,6 +1,12 @@
-from analyzer import Analyzer
-from interface import Interface
+from classes.analyzer import Analyzer
+from classes.interface import Interface
 import numpy as np
+
+"""Script to capture pure oscilloscope data, transcribing the waveforms into a file.
+
+    Calculates the AC voltage and stores it + other parameters in the file header.
+"""
+
 
 WAVELENGTH = 1550e-9
 POLING_LENGTH = 0.3
