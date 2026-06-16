@@ -7,8 +7,10 @@ import numpy as np
     Displays the distribution graphically through a histogram, also displaying the median.
 """
 
+THRESHOLD = 0.0713333 # in pm/V
 
 chi2 = 1e12 * np.loadtxt("chi2_1.txt", skiprows=2)
+chi2 = chi2[chi2 >= THRESHOLD]
 
 median = np.median(chi2)
 std = np.std(chi2, ddof=1)
