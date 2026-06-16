@@ -92,9 +92,9 @@ for i in range(SHOTS):
         V_ac = 1000 * scope.get_amplitude(channel=1)
 
         scope.set_screen(channel=2,
-                        volts_per_div=50e-3,
+                        volts_per_div=200e-3,
                         time_per_div=0.8e-3,
-                        vertical_offset=100e-3,
+                        vertical_offset=400e-3,
                         horizontal_offset=5e-3,
                         trigger_level=0,
                         ext_trigger=True)
@@ -108,7 +108,7 @@ for i in range(SHOTS):
                             discontinuity_exclusion_optima=14,
                             modulation_sweep_factor=4,
                             modulation_overlap_factor=8,
-                            prominence=0.01,
+                            prominence=0.02,
                             voltage_ratio_acceptance=0.7,
                             debug=True)
     

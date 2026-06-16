@@ -8,7 +8,7 @@ import numpy as np
 """
 
 
-chi2 = 1e12 * np.loadtxt("chi2.txt", skiprows=2)
+chi2 = 1e12 * np.loadtxt("chi2_1.txt", skiprows=2)
 
 median = np.median(chi2)
 std = np.std(chi2, ddof=1)

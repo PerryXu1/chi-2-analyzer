@@ -26,8 +26,8 @@ EFFECTIVE_DISTANCE = 33e-6
 CORE_INDEX = 1.52
 NOMINAL_AC_VOLTAGE = 240
 
-SHOTS = 1000
-V_AC_CALIBRATION_PASSES = 1000 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
+SHOTS = 400
+V_AC_CALIBRATION_PASSES = 400 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
                     wavelength=1550e-9,
@@ -58,9 +58,9 @@ for i in range(SHOTS):
         analyzer.set_ac_voltage(V_ac)
 
         scope.set_screen(channel=2,
-                        volts_per_div=50e-3,
+                        volts_per_div=200e-3,
                         time_per_div=0.8e-3,
-                        vertical_offset=100e-3,
+                        vertical_offset=400e-3,
                         horizontal_offset=5e-3,
                         trigger_level=0,
                         ext_trigger=True)
@@ -74,7 +74,7 @@ for i in range(SHOTS):
                             discontinuity_exclusion_optima=14,
                             modulation_sweep_factor=4,
                             modulation_overlap_factor=8,
-                            prominence=0.01,
+                            prominence=0.02,
                             voltage_ratio_acceptance=0.7,
                             debug=False)
     
