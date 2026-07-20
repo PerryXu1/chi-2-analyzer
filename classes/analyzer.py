@@ -450,6 +450,10 @@ class Analyzer:
         # Finding modulation optima
         modulation_max_indices = []
         modulation_min_indices = []
+        
+        if (len(max_index_array) == 0 or len(min_index_array) == 0) and debug == False:
+            return []
+
 
         if max_index_array[0] < min_index_array[0]:
             first_slope_is_falling = True

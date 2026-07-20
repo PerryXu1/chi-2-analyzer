@@ -9,7 +9,7 @@ import numpy as np
 
 THRESHOLD = 0.0713333 # in pm/V
 
-chi2 = 1e12 * np.loadtxt("chi2_1.txt", skiprows=2)
+chi2 = 1e12 * np.loadtxt("chi2.txt", skiprows=2)
 chi2 = chi2[chi2 >= THRESHOLD]
 
 median = np.median(chi2)

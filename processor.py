@@ -26,15 +26,15 @@ EFFECTIVE_DISTANCE = 33e-6
 CORE_INDEX = 1.52
 NOMINAL_AC_VOLTAGE = 240
 
-SHOTS = 400
-V_AC_CALIBRATION_PASSES = 400 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
+SHOTS = 500
+V_AC_CALIBRATION_PASSES = 500 # Recalculate the V_AC every V_AC_CALIBRATION_PASSES shots
 
 analyzer = Analyzer(core_index=1.52,
                     wavelength=1550e-9,
                     eff_distance=33e-6,
                     ac_voltage=240,
                     length=0.3,
-                    driver_frequency=100,
+                    driver_frequency=20,
                     phase_mod_cycles=2.5)
 
 scope = Interface(instrument_num=1)
@@ -58,26 +58,25 @@ for i in range(SHOTS):
         analyzer.set_ac_voltage(V_ac)
 
         scope.set_screen(channel=2,
-                        volts_per_div=200e-3,
-                        time_per_div=0.8e-3,
-                        vertical_offset=400e-3,
-                        horizontal_offset=5e-3,
+                        volts_per_div=2.52e-3,
+                        time_per_div=4e-3,
+                        vertical_offset=7.5e-3,
+                        horizontal_offset=25e-3,
                         trigger_level=0,
                         ext_trigger=True)
 
     time, voltage = scope.acquire_signal(channel=2)
     chi2 = analyzer.analyze(time=time,
                             voltage=voltage,
-                            window_size=50,
-                            dominant_sweep_factor=4,
+                            window_size=25,
+                            dominant_sweep_factor=3,
                             discontinuity_exclusion_factor=0.7,
                             discontinuity_exclusion_optima=14,
-                            modulation_sweep_factor=4,
-                            modulation_overlap_factor=8,
-                            prominence=0.02,
-                            voltage_ratio_acceptance=0.7,
+                            modulation_sweep_factor=3,
+                            modulation_overlap_factor=6,
+                            prominence=0.0015,
+                            voltage_ratio_acceptance=0.5,
                             debug=False)
-    
     chi2_array.extend(chi2)
     
 scope.close()

@@ -68,7 +68,7 @@ analyzer = Analyzer(core_index=1.52,
                     eff_distance=33e-6,
                     ac_voltage=240,
                     length=0.3,
-                    driver_frequency=100,
+                    driver_frequency=20,
                     phase_mod_cycles=2.5)
 
 display = Display(title="Chi-2 Waveform")
@@ -92,24 +92,24 @@ for i in range(SHOTS):
         V_ac = 1000 * scope.get_amplitude(channel=1)
 
         scope.set_screen(channel=2,
-                        volts_per_div=200e-3,
-                        time_per_div=0.8e-3,
-                        vertical_offset=400e-3,
-                        horizontal_offset=5e-3,
+                        volts_per_div=2.52e-3,
+                        time_per_div=4e-3,
+                        vertical_offset=7.5e-3,
+                        horizontal_offset=25e-3,
                         trigger_level=0,
                         ext_trigger=True)
 
     time, voltage = scope.acquire_signal(channel=2)
     modulation_indices, max_indices, min_indices = analyzer.analyze(time=time,
                             voltage=voltage,
-                            window_size=50,
-                            dominant_sweep_factor=4,
+                            window_size=25,
+                            dominant_sweep_factor=3,
                             discontinuity_exclusion_factor=0.7,
                             discontinuity_exclusion_optima=14,
-                            modulation_sweep_factor=4,
-                            modulation_overlap_factor=8,
-                            prominence=0.02,
-                            voltage_ratio_acceptance=0.7,
+                            modulation_sweep_factor=3,
+                            modulation_overlap_factor=6,
+                            prominence=0.0015,
+                            voltage_ratio_acceptance=0.5,
                             debug=True)
     
     display.visualize_waveform(time=time,
