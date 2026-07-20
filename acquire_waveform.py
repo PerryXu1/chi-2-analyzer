@@ -8,17 +8,16 @@ import time as tm
     Calculates the AC voltage and stores it + other parameters in the file header.
 """
 
-
 WAVELENGTH = 1550e-9
 POLING_LENGTH = 0.3
-EFFECTIVE_DISTANCE = 33e-6
-CORE_INDEX = 1.52
+EFFECTIVE_DISTANCE = 41.1e-6
+CORE_INDEX = 1.5
 
 SHOTS = 10
 
-analyzer = Analyzer(core_index=1.52,
+analyzer = Analyzer(core_index=1.5,
                     wavelength=1550e-9,
-                    eff_distance=33e-6,
+                    eff_distance=41.1e-6,
                     ac_voltage=240,
                     length=0.3,
                     driver_frequency=100,
@@ -36,7 +35,8 @@ for i in range(SHOTS):
     #                 trigger_level=0,
     #                 ext_trigger=False)
     # AC_VOLTAGE = 1000 * scope.get_amplitude(channel=1)
-    AC_VOLTAGE = 1200 #preset rn due to bad oscilloscope
+    AC_VOLTAGE = 1 #preset rn due to bad oscilloscope
+    AC_VOLTAGE = 120 * AC_VOLTAGE
 
     scope.set_screen(channel=2,
                     volts_per_div=10e-3,

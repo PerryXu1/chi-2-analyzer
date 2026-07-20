@@ -8,7 +8,7 @@ FILENAME = "waveform.txt"
 
 WAVELENGTH = 1550e-9
 POLING_LENGTH = 0.3
-EFFECTIVE_DISTANCE = 33e-6
+EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.52
 AC_VOLTAGE = 240  
 
@@ -39,10 +39,8 @@ try:
     y_origin = float(preamble[8])
     y_reference = float(preamble[9])
 
-    time.sleep(0.2) # Clear buffer
+    time.sleep(0.2)
 
-    # 3. Pull the raw bytes directly out of the active display memory
-    print("Reading frozen display memory...")
     raw_voltage = scope.query_binary_values(
         ":WAVEFORM:DATA?", 
         datatype='B', 
@@ -53,13 +51,11 @@ try:
     
     raw_time = np.arange(num_points)
 
-    # Reconstruct the real physical values
     time_array = ((raw_time - x_reference) * x_increment) + x_origin
     voltage_array = ((raw_voltage - y_reference) * y_increment) + y_origin
     
     scope.close()
 
-    # --- SAVE TO FILE ---
     header_info = (
         f"WAVELENGTH={WAVELENGTH}, EFFECTIVE_DISTANCE={EFFECTIVE_DISTANCE}, "
         f"AC_VOLTAGE={AC_VOLTAGE}, POLING_LENGTH={POLING_LENGTH}, CORE_INDEX={CORE_INDEX}\n"
