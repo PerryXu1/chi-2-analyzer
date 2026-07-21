@@ -13,7 +13,7 @@ POLING_LENGTH = 0.3
 EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.5
 
-SHOTS = 10
+SHOTS = 1
 
 analyzer = Analyzer(core_index=1.5,
                     wavelength=1550e-9,

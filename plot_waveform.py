@@ -10,7 +10,7 @@ print("Starting sequential waveform plotting...")
 print("Close the current plot window to load the next waveform.\n")
 
 for i in range(SHOTS):
-    filename = f"waveform00001.txt"
+    filename = f"waveform_polarimeter_-30_0_01.txt"
 
     if not os.path.exists(filename):
         print(f"Warning: {filename} not found. Skipping...")
