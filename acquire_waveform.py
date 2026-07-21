@@ -27,16 +27,14 @@ scope = Interface(instrument_num=1)
 scope.reset()
 
 for i in range(SHOTS):
-    # scope.set_screen(channel=1,
-    #                 volts_per_div=100e-3,
-    #                 time_per_div=1e-3,
-    #                 vertical_offset=0,
-    #                 horizontal_offset=0,
-    #                 trigger_level=0,
-    #                 ext_trigger=False)
-    # AC_VOLTAGE = 1000 * scope.get_amplitude(channel=1)
-    AC_VOLTAGE = 1 #preset rn due to bad oscilloscope
-    AC_VOLTAGE = 120 * AC_VOLTAGE
+    scope.set_screen(channel=1,
+                    volts_per_div=100e-3,
+                    time_per_div=1e-3,
+                    vertical_offset=0,
+                    horizontal_offset=0,
+                    trigger_level=0,
+                    ext_trigger=False)
+    AC_VOLTAGE = 1000 * scope.get_amplitude(channel=1)
 
     scope.set_screen(channel=2,
                     volts_per_div=10e-3,

@@ -17,16 +17,13 @@ rm = pyvisa.ResourceManager()
 try:
     scope = rm.open_resource(VISA_ADDRESS)
     
-    # Standard connection parameters
     scope.read_termination = '\n'
     scope.write_termination = '\n'
     
-    # 1. Point the waveform processor to the channel you want to read
     scope.write(f":WAVEFORM:SOURCE CHANNEL{CHANNEL}")
     scope.write(":WAVEFORM:FORMAT BYTE")
     time.sleep(0.1) 
     
-    # 2. Get the preamble for the frozen screen data
     preamble_raw = scope.query(":WAVEFORM:PREAMBLE?")
     preamble = preamble_raw.strip().split(',')
 
