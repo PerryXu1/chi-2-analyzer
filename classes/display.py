@@ -98,6 +98,23 @@ class Display():
             plt.show()
 
     def plot_fitted_curve(self, *, time_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float):
+        """Plots the fitted curve based on the optimized parameters
+
+        :param time_array: The array of time values to plot
+        :type time_array: NDArray[float64]
+        :param A: Curve fit parameter A
+        :type A: float
+        :param B: Curve fit parameter B
+        :type B: float
+        :param C: Curve fit parameter C
+        :type C: float
+        :param D: Curve fit parameter D
+        :type D: float
+        :param E: Curve fit parameter E
+        :type E: float
+        :param F: Curve fit parameter F
+        :type F: float
+        """
 
         voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - E)))) + F
 
@@ -116,6 +133,27 @@ class Display():
         plt.show()
 
     def compare_fitted_curve(self, *, fitted_time_array: NDArray[float64], time_array: NDArray[float64], voltage_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float):
+        """Plots the fitted curve based on the optimized parameters as well as the experimental data points
+
+        :param fitted_time_array: The array of time values to plot the fitted curve at
+        :type fitted_time_array: NDArray[float64]
+        :param time_array: The array of time values to plot
+        :type time_array: NDArray[float64]
+        :param voltage_array: The array of experimental voltage values
+        :type voltage_array: NDArray[float64]
+        :param A: Curve fit parameter A
+        :type A: float
+        :param B: Curve fit parameter B
+        :type B: float
+        :param C: Curve fit parameter C
+        :type C: float
+        :param D: Curve fit parameter D
+        :type D: float
+        :param E: Curve fit parameter E
+        :type E: float
+        :param F: Curve fit parameter F
+        :type F: float
+        """
 
         fitted_voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - E)))) + F
 
