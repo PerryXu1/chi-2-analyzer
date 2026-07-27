@@ -1,3 +1,4 @@
+import numpy as np
 from numpy import float64
 from numpy.typing import NDArray
 from typing import Optional
@@ -94,3 +95,23 @@ class Display():
         if show_plot:
             plt.tight_layout()
             plt.show()
+
+    def plot_fitted_curve(self, *, time_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float):
+
+        voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - E)))) + F
+
+        plt.figure(figsize=(8, 4))
+        plt.plot(time_array, voltage_array, color="royalblue", linewidth=2, label="y = sin(x)")
+
+        # 4. Add labels, grid, and title
+        plt.title("Plot of fitted-chi2 signal", fontsize=12)
+        plt.xlabel("Time", fontsize=10)
+        plt.ylabel("Voltage", fontsize=10)
+        plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
+        plt.axvline(0, color="black", linewidth=0.8, linestyle="--")
+        plt.grid(True, linestyle=":", alpha=0.6)
+        plt.legend()
+
+        # 5. Display the graph
+        plt.tight_layout()
+        plt.show()
