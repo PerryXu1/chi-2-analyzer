@@ -103,3 +103,14 @@ class CurveFitter:
 
         return optimized_parameters
 
+    def get_chi2(self, C: float) -> float:
+        """Gets the chi(2) from the optimized C parameter
+
+        :param C: The optimized C parameter
+        :type C: float
+        :return: The chi(2) associated with the C parameter
+        :rtype: float
+        """
+
+        chi2 = (C * self.wavelength * self.core_index * self.effective_distance) / (2 * np.pi * self.poled_fiber_length * self.field_adjustment_factor * self.ac_voltage)
+        return chi2
