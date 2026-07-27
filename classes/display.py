@@ -1,3 +1,4 @@
+import numpy as np
 from numpy import float64
 from numpy.typing import NDArray
 from typing import Optional
@@ -5,20 +6,16 @@ import matplotlib.pyplot as plt
 
 class Display():
     """Class to visualize waveforms/plots using matplotlib
-
-    :param title: the title of the plot
-    :type title: str
     """
 
-    title: str
-    def __init__(self, title: str = "Signal Waveform"):
-        self.title = title
-
+    def __init__(self):
+        pass
 
     def visualize_waveform(self, time: NDArray[float64], voltage: NDArray[float64], *,
         max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None, mid_indices: Optional[list[int]] = None,
         ideal_max_indices: Optional[list[int]] = None, ideal_min_indices: Optional[list[int]] = None, ideal_mid_indices: Optional[list[int]] = None,
         modulation_optima_indices: Optional[list[int]] = None,
+        title: str = "Waveform",
         ax: Optional[plt.Axes] = None) -> None:
         """Generates a standardized Voltage vs. Time graph for oscilloscope data
 
@@ -40,6 +37,8 @@ class Display():
         :type ideal_mid_indices: list[int], optional
         :param modulation_optima_indices: A list of array indices corresponding to modulated localized optimums
         :type modulation_optima_indices: list[int], optional
+        :param title: The title of the plot
+        :type title: str
         :param ax: An existing Matplotlib Axes object to plot onto. If None, a new figure and axes context will be created and displayed immediately
         :type ax: plt.Axes, optional
 
@@ -79,13 +78,13 @@ class Display():
             ax.scatter(time[ideal_mid_indices], voltage[ideal_mid_indices], 
                     color="darkgreen", marker="s", s=40, zorder=5, label="Ideal Max Phase Change")
         
-        #plot modulation minima and maxima
+        # Plot modulation minima and maxima
         if modulation_optima_indices is not None and len(modulation_optima_indices) > 0:
             ax.scatter(time[modulation_optima_indices], voltage[modulation_optima_indices], 
                     color="black", marker="o", s=40, zorder=5, label="Modulation Optima")
         
         # Chart display settings
-        ax.set_title(self.title, fontsize=12, fontweight="bold")
+        ax.set_title(title, fontsize=12, fontweight="bold")
         ax.set_xlabel("Time (s)", fontsize=10)
         ax.set_ylabel("Voltage (V)", fontsize=10)
         ax.grid(True, linestyle=":", alpha=0.6)
@@ -94,3 +93,96 @@ class Display():
         if show_plot:
             plt.tight_layout()
             plt.show()
+
+    def plot_fitted_curve(self, *, time_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float, G: float) -> None:
+        """Plots the fitted curve based on the optimized parameters
+
+        :param time_array: The array of time values to plot
+        :type time_array: NDArray[float64]
+        :param A: Curve fit parameter A
+        :type A: float
+        :param B: Curve fit parameter B
+        :type B: float
+        :param C: Curve fit parameter C
+        :type C: float
+        :param D: Curve fit parameter D
+        :type D: float
+        :param E: Curve fit parameter E
+        :type E: float
+        :param F: Curve fit parameter F
+        :type F: float
+        :param G: Curve fit parameter G
+        :type G: float
+        """
+
+        voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - F)))) + G
+
+        plt.figure(figsize=(8, 4))
+        plt.plot(time_array, voltage_array, color="royalblue", linewidth=2, label="y = sin(x)")
+
+        plt.title("Plot of fitted-chi2 signal", fontsize=12)
+        plt.xlabel("Time", fontsize=10)
+        plt.ylabel("Voltage", fontsize=10)
+        plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
+        plt.axvline(0, color="black", linewidth=0.8, linestyle="--")
+        plt.grid(True, linestyle=":", alpha=0.6)
+        plt.legend()
+
+        plt.tight_layout()
+        plt.show()
+
+    def compare_fitted_curve(self, *, fitted_time_array: NDArray[float64], time_array: NDArray[float64], voltage_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float, G:float) ->None:
+        """Plots the fitted curve based on the optimized parameters as well as the experimental data points
+
+        :param fitted_time_array: The array of time values to plot the fitted curve at
+        :type fitted_time_array: NDArray[float64]
+        :param time_array: The array of time values to plot
+        :type time_array: NDArray[float64]
+        :param voltage_array: The array of experimental voltage values
+        :type voltage_array: NDArray[float64]
+        :param A: Curve fit parameter A
+        :type A: float
+        :param B: Curve fit parameter B
+        :type B: float
+        :param C: Curve fit parameter C
+        :type C: float
+        :param D: Curve fit parameter D
+        :type D: float
+        :param E: Curve fit parameter E
+        :type E: float
+        :param F: Curve fit parameter F
+        :type F: float
+        :param F: Curve fit parameter G
+        :type F: float
+        """
+
+        fitted_voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - F)))) + G
+
+        plt.figure(figsize=(8, 4))
+        plt.plot(
+            time_array, 
+            voltage_array, 
+            linestyle='none', 
+            marker='o', 
+            markersize=3, 
+            color='gray', 
+            alpha=0.5, 
+            label='Experimental Data Points'
+        )
+
+        plt.plot(
+            fitted_time_array, 
+            fitted_voltage_array, 
+            color='crimson', 
+            linewidth=2, 
+            label='Fitted Curve'
+        )
+
+        plt.title("Fitted Waveform vs. Raw Data", fontsize=12)
+        plt.xlabel("Time", fontsize=10)
+        plt.ylabel("Voltage", fontsize=10)
+        plt.grid(True, linestyle="--", alpha=0.6)
+        plt.legend(loc="upper right")
+
+        plt.tight_layout()
+        plt.show()
