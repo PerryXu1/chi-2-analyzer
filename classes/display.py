@@ -6,13 +6,10 @@ import matplotlib.pyplot as plt
 
 class Display():
     """Class to visualize waveforms/plots using matplotlib
-
-    :param title: the title of the plot
-    :type title: str
     """
 
     def __init__(self):
-
+        pass
 
     def visualize_waveform(self, time: NDArray[float64], voltage: NDArray[float64], *,
         max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None, mid_indices: Optional[list[int]] = None,
@@ -87,7 +84,7 @@ class Display():
                     color="black", marker="o", s=40, zorder=5, label="Modulation Optima")
         
         # Chart display settings
-        ax.set_title(self.title, fontsize=12, fontweight="bold")
+        ax.set_title(title, fontsize=12, fontweight="bold")
         ax.set_xlabel("Time (s)", fontsize=10)
         ax.set_ylabel("Voltage (V)", fontsize=10)
         ax.grid(True, linestyle=":", alpha=0.6)

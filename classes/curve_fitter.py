@@ -89,7 +89,7 @@ class CurveFitter:
         initial_guesses = [A_guess, B_guess, C_guess, D_guess, E_guess, F_guess]
 
         # Set physical parameter boundaries
-        lower_bounds = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        lower_bounds = [0, 0, 0, 0, -np.inf, -np.inf]
         upper_bounds = [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf]
 
         optimized_parameters, _ = curve_fit(

@@ -15,9 +15,10 @@ voltage_array = sim.noisy_modulated_sine(Vpp=1,
                                          core_index=1.45,
                                          ac_voltage=240,
                                          eff_distance=41.1e-6,
+                                         field_adjustment_factor=1.7,
                                          ac_frequency=3000,
                                          t_offset=0,
-                                         SNR=-20
+                                         SNR=50
                                          )
 
 curve_fitter = CurveFitter(poled_fiber_length=0.3,
@@ -40,5 +41,23 @@ display = Display()
 chi2 = curve_fitter.get_chi2(C)
 print(chi2)
 
+display.visualize_waveform(time=time_array, voltage=voltage_array)
 
+display.plot_fitted_curve(
+                        time_array=time_array,
+                        A=A,
+                        B=B,
+                        C=C,
+                        D=D,
+                        E=E,
+                        F=F)
 
+display.compare_fitted_curve(fitted_time_array=time_array,
+                             time_array=time_array,
+                             voltage_array=voltage_array,
+                             A=A,
+                             B=B,
+                             C=C,
+                             D=D,
+                             E=E,
+                             F=F)
