@@ -1,5 +1,7 @@
 import numpy as np
 from scipy.optimize import curve_fit
+from numpy import float64
+from numpy.typing import NDArray
 
 class CurveFitter:
     """A class of methods to fit a curve to experimental interferometer data, allowing for the
@@ -14,8 +16,6 @@ class CurveFitter:
     :type poled_fiber_length: float
     :param wavelength: Wavelength of light coupled into the PSF in metres (m)
     :type wavelength: float
-    :param estimated_chi2: A guess of the chi(2) of the fiber in metres per volt (m/V)
-    :type estimated_chi2: float
     :param core_index: Refractive index of the fibre core
     :type core_index: float
     :param field_adjustment_factor: Ratio of the simulated average electric field in the direction spanning both
@@ -41,8 +41,7 @@ class CurveFitter:
     def __init__(self, *, poled_fiber_length: float, core_index: float, effective_distance: float, field_adjustment_factor,
                  periods_per_piezo_cycle: float, piezo_frequency: float,
                  ac_voltage: float, ac_frequency: float,
-                 wavelength: float,
-                 estimated_chi2: float):
+                 wavelength: float):
         self.poled_fiber_length = poled_fiber_length
         self.core_index = core_index
         self.effective_distance = effective_distance
@@ -53,60 +52,54 @@ class CurveFitter:
         self.ac_frequency = ac_frequency
         self.wavelength = wavelength
 
-    def fit_waveform_get_C(
-        time_array: np.ndarray,
-        voltage_array: np.ndarray,
-        B_guess: float,
-        C_guess: float,
-        D_guess: float,
-    ) -> float:
+    def fit_waveform(self, *, time_array: NDArray[float64], voltage_array: NDArray[float64], estimated_chi2: float) -> tuple[float]:
         """Fits the equation V = A*(1 + cos(B*(x-E) - C*cos(D*(x-E)))) + F to oscilloscope waveform data
         and returns the optimized C parameter.
         The guesses for the parameters A, E, F are determined through processing the voltage waveform.
 
-        :param time_array: Time array
-        :param y_data: Voltage array (1D numpy array)
-        :param A_guess: Initial guess for Amplitude A
-        :param B_guess: Initial guess for Frequency parameter B
-        :param C_guess: Initial guess for Phase modulation depth C
-        :param D_guess: Initial guess for Modulation frequency D
-        :return: Optimized C parameter float
+        :param time_array: Time array (x-values)
+        :type time_array: NDArray[float64]
+        :param voltage_array: Voltage array (y-values)
+        :type voltage_array: NDArray[float64]
+        :param estimated_chi2: The guess of the chi2 of the fiber. Can be inputted manually or paired with the chi2 analyzer
+        :type estimated_ch2: float
+        :return: The fit parameters
+        :rtype: tuple[float]
         """
 
-        # 1. Define model function
+        # function to fit
         def waveform_model(x, A, B, C, D, E, F):
             return A * (1 + np.cos(B * (x - E) - C * np.cos(D * (x - E)))) + F
 
-        # 2. Automatically estimate initial guesses for E and F from data
-        F_guess = float(np.min(y_data))
+        # CALCULATE GUESSES
+        A_guess = (np.argmax(voltage_array) - np.argmin(voltage_array)) / 2
 
-        # Find time offset E near the signal peak
-        max_idx = np.argmax(y_data)
-        E_guess = float(x_data[max_idx])
+        B_guess = self.periods_per_piezo_cycle * 2 * np.pi * self.piezo_frequency
 
-        # Assemble full parameter vector: [A, B, C, D, E, F]
+        C_guess = ((2 * np.pi * self.poled_fiber_length) / self.wavelength) * (estimated_chi2 / self.core_index) * (self.field_adjustment_factor * self.ac_voltage / self.effective_distance)
+
+        D_guess = 2 * np.pi * self.ac_frequency
+
+        max_idx = np.argmax(voltage_array)
+        E_guess = time_array[max_idx]
+
+        F_guess = float(np.min(voltage_array))
+
+        # Initial guesses
         initial_guesses = [A_guess, B_guess, C_guess, D_guess, E_guess, F_guess]
 
-        # 3. Apply physical parameter bounds
-        # A > 0, C > 0 (prevents negative scale/phase inversions)
-        lower_bounds = [0.0, -np.inf, 0.0, -np.inf, -np.inf, -np.inf]
+        # Set physical parameter boundaries
+        lower_bounds = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
         upper_bounds = [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf]
 
-        try:
-            popt, _ = curve_fit(
-                waveform_model,
-                x_data,
-                y_data,
-                p0=initial_guesses,
-                bounds=(lower_bounds, upper_bounds),
-                maxfev=10000,  # Ensure sufficient iterations for convergence
-            )
+        optimized_parameters, _ = curve_fit(
+            waveform_model,
+            time_array,
+            voltage_array,
+            p0=initial_guesses,
+            bounds=(lower_bounds, upper_bounds),
+            maxfev=10000,
+        )
 
-            # Unpack fitted parameters
-            _, _, C_fitted, _, _, _ = popt
+        return optimized_parameters
 
-            return float(C_fitted)
-
-        except RuntimeError as e:
-            print(f"Error: Fitting algorithm failed to converge: {e}")
-            return None

@@ -1,7 +1,6 @@
 import numpy as np
 from numpy import float64
 from numpy.typing import NDArray
-import numpy as np
 
 """
 Collection of test signals to test the data analyzer with. Reference signal to check how well-adjusted the analyzer parameters are
