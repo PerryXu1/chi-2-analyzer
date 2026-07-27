@@ -123,8 +123,7 @@ class Display():
     
             plt.figure(figsize=(8, 4))
             plt.plot(time_array, voltage_array, color="royalblue", linewidth=2, label="Chi(2) Signal")
-    
-            # 4. Add labels, grid, and title
+
             plt.title("Plot of fitted chi(2) signal", fontsize=12)
             plt.xlabel("Time", fontsize=10)
             plt.ylabel("Voltage", fontsize=10)
@@ -133,6 +132,5 @@ class Display():
             plt.grid(True, linestyle=":", alpha=0.6)
             plt.legend()
     
-            # 5. Display the graph
             plt.tight_layout()
             plt.show()
