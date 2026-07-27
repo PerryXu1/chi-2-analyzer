@@ -11,15 +11,14 @@ class Display():
     :type title: str
     """
 
-    title: str
-    def __init__(self, title: str = "Signal Waveform"):
-        self.title = title
+    def __init__(self):
 
 
     def visualize_waveform(self, time: NDArray[float64], voltage: NDArray[float64], *,
         max_indices: Optional[list[int]] = None, min_indices: Optional[list[int]] = None, mid_indices: Optional[list[int]] = None,
         ideal_max_indices: Optional[list[int]] = None, ideal_min_indices: Optional[list[int]] = None, ideal_mid_indices: Optional[list[int]] = None,
         modulation_optima_indices: Optional[list[int]] = None,
+        title: str = "Waveform",
         ax: Optional[plt.Axes] = None) -> None:
         """Generates a standardized Voltage vs. Time graph for oscilloscope data
 
@@ -41,6 +40,8 @@ class Display():
         :type ideal_mid_indices: list[int], optional
         :param modulation_optima_indices: A list of array indices corresponding to modulated localized optimums
         :type modulation_optima_indices: list[int], optional
+        :param title: The title of the plot
+        :type title: str
         :param ax: An existing Matplotlib Axes object to plot onto. If None, a new figure and axes context will be created and displayed immediately
         :type ax: plt.Axes, optional
 
@@ -114,21 +115,35 @@ class Display():
         plt.tight_layout()
         plt.show()
 
-    def compare_fitted_curve(self, *, time_array: NDArray[float64], voltage_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float):
+    def compare_fitted_curve(self, *, fitted_time_array: NDArray[float64], time_array: NDArray[float64], voltage_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float):
 
+        fitted_voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - E)))) + F
 
-            fitted_voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - E)))) + F
-    
-            plt.figure(figsize=(8, 4))
-            plt.plot(time_array, voltage_array, color="royalblue", linewidth=2, label="Chi(2) Signal")
+        plt.figure(figsize=(8, 4))
+        plt.plot(
+            time_array, 
+            voltage_array, 
+            linestyle='none', 
+            marker='o', 
+            markersize=3, 
+            color='gray', 
+            alpha=0.5, 
+            label='Experimental Data Points'
+        )
 
-            plt.title("Plot of fitted chi(2) signal", fontsize=12)
-            plt.xlabel("Time", fontsize=10)
-            plt.ylabel("Voltage", fontsize=10)
-            plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
-            plt.axvline(0, color="black", linewidth=0.8, linestyle="--")
-            plt.grid(True, linestyle=":", alpha=0.6)
-            plt.legend()
-    
-            plt.tight_layout()
-            plt.show()
+        plt.plot(
+            fitted_time_array, 
+            fitted_voltage_array, 
+            color='crimson', 
+            linewidth=2, 
+            label='Fitted Curve'
+        )
+
+        plt.title("Fitted Waveform vs. Raw Data", fontsize=12)
+        plt.xlabel("Time", fontsize=10)
+        plt.ylabel("Voltage", fontsize=10)
+        plt.grid(True, linestyle="--", alpha=0.6)
+        plt.legend(loc="upper right")
+
+        plt.tight_layout()
+        plt.show()

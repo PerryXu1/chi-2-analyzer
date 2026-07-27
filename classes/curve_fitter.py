@@ -38,7 +38,7 @@ class CurveFitter:
     effective_distance: float
     ac_frequency: float
     
-    def __init__(self, *, poled_fiber_length: float, core_index: float, effective_distance: float, field_adjustment_factor,
+    def __init__(self, *, poled_fiber_length: float, core_index: float, effective_distance: float, field_adjustment_factor: float,
                  periods_per_piezo_cycle: float, piezo_frequency: float,
                  ac_voltage: float, ac_frequency: float,
                  wavelength: float):
