@@ -115,3 +115,24 @@ class Display():
         # 5. Display the graph
         plt.tight_layout()
         plt.show()
+
+    def compare_fitted_curve(self, *, time_array: NDArray[float64], voltage_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float):
+
+
+            fitted_voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - E)))) + F
+    
+            plt.figure(figsize=(8, 4))
+            plt.plot(time_array, voltage_array, color="royalblue", linewidth=2, label="Chi(2) Signal")
+    
+            # 4. Add labels, grid, and title
+            plt.title("Plot of fitted chi(2) signal", fontsize=12)
+            plt.xlabel("Time", fontsize=10)
+            plt.ylabel("Voltage", fontsize=10)
+            plt.axhline(0, color="black", linewidth=0.8, linestyle="--")
+            plt.axvline(0, color="black", linewidth=0.8, linestyle="--")
+            plt.grid(True, linestyle=":", alpha=0.6)
+            plt.legend()
+    
+            # 5. Display the graph
+            plt.tight_layout()
+            plt.show()
