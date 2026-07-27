@@ -80,7 +80,7 @@ class Display():
             ax.scatter(time[ideal_mid_indices], voltage[ideal_mid_indices], 
                     color="darkgreen", marker="s", s=40, zorder=5, label="Ideal Max Phase Change")
         
-        #plot modulation minima and maxima
+        # Plot modulation minima and maxima
         if modulation_optima_indices is not None and len(modulation_optima_indices) > 0:
             ax.scatter(time[modulation_optima_indices], voltage[modulation_optima_indices], 
                     color="black", marker="o", s=40, zorder=5, label="Modulation Optima")
@@ -103,7 +103,6 @@ class Display():
         plt.figure(figsize=(8, 4))
         plt.plot(time_array, voltage_array, color="royalblue", linewidth=2, label="y = sin(x)")
 
-        # 4. Add labels, grid, and title
         plt.title("Plot of fitted-chi2 signal", fontsize=12)
         plt.xlabel("Time", fontsize=10)
         plt.ylabel("Voltage", fontsize=10)
@@ -112,7 +111,6 @@ class Display():
         plt.grid(True, linestyle=":", alpha=0.6)
         plt.legend()
 
-        # 5. Display the graph
         plt.tight_layout()
         plt.show()
 

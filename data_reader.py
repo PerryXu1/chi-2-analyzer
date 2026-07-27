@@ -19,7 +19,6 @@ std = np.std(chi2, ddof=1)
 print(f"Median: {median:.6e}")
 print(f"Standard Deviation: {std:.6e}")
 
-# Create the histogram plot
 plt.figure(figsize=(8, 5))
 plt.hist(
     chi2,
@@ -29,7 +28,6 @@ plt.hist(
     alpha=0.7,
 )
 
-# Add a vertical dashed line to mark the median
 plt.axvline(
     median,
     color="red",
@@ -38,7 +36,6 @@ plt.axvline(
     label=f"Median: {median:.4e}",
 )
 
-# Label the chart
 plt.title(r"Distribution of $\chi^{(2)}$ Values", fontsize=14)
 plt.xlabel(r"$\chi^{(2)}$ Value (pm/V)", fontsize=12)
 plt.ylabel("Frequency (Counts)", fontsize=12)
