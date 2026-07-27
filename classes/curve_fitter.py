@@ -53,9 +53,9 @@ class CurveFitter:
         self.wavelength = wavelength
 
     def fit_waveform(self, *, time_array: NDArray[float64], voltage_array: NDArray[float64], estimated_chi2: float) -> tuple[float]:
-        """Fits the equation V = A*(1 + cos(B*(x-E) - C*cos(D*(x-E)))) + F to oscilloscope waveform data
+        """Fits the equation V = A*(1 + cos(B*(x-E) - C*cos(D*(x-F)))) + G to oscilloscope waveform data
         and returns the optimized C parameter.
-        The guesses for the parameters A, E, F are determined through processing the voltage waveform.
+        The guesses for the parameters A, E, G are determined through processing the voltage waveform.
 
         :param time_array: Time array (x-values)
         :type time_array: NDArray[float64]
@@ -68,29 +68,31 @@ class CurveFitter:
         """
 
         # function to fit
-        def waveform_model(x, A, B, C, D, E, F):
-            return A * (1 + np.cos(B * (x - E) - C * np.cos(D * (x - E)))) + F
+        def waveform_model(x, A, B, C, D, E, F, G):
+            return A * (1 + np.cos(B * (x - E) - C * np.cos(D * (x - F)))) + G
 
         # CALCULATE GUESSES
-        A_guess = (np.argmax(voltage_array) - np.argmin(voltage_array)) / 2
+        A_guess = (np.max(voltage_array) - np.min(voltage_array)) / 2
 
         B_guess = self.periods_per_piezo_cycle * 2 * np.pi * self.piezo_frequency
 
-        C_guess = ((2 * np.pi * self.poled_fiber_length) / self.wavelength) * (estimated_chi2 / self.core_index) * (self.field_adjustment_factor * self.ac_voltage / self.effective_distance)
+        C_guess = ((np.pi * self.poled_fiber_length) / self.wavelength) * (estimated_chi2 / self.core_index) * (self.ac_voltage / (self.effective_distance * self.field_adjustment_factor))
 
         D_guess = 2 * np.pi * self.ac_frequency
 
         max_idx = np.argmax(voltage_array)
         E_guess = time_array[max_idx]
+        
+        F_guess = 0
 
-        F_guess = float(np.min(voltage_array))
-
+        G_guess = float(np.min(voltage_array))
+        
         # Initial guesses
-        initial_guesses = [A_guess, B_guess, C_guess, D_guess, E_guess, F_guess]
+        initial_guesses = [A_guess, B_guess, C_guess, D_guess, E_guess, F_guess, G_guess]
 
         # Set physical parameter boundaries
-        lower_bounds = [0, 0, 0, 0, -np.inf, -np.inf]
-        upper_bounds = [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf]
+        lower_bounds = [-np.inf, -np.inf, 0, -np.inf, -np.inf, -np.inf, -np.inf]
+        upper_bounds = [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf]
 
         optimized_parameters, _ = curve_fit(
             waveform_model,
@@ -98,7 +100,7 @@ class CurveFitter:
             voltage_array,
             p0=initial_guesses,
             bounds=(lower_bounds, upper_bounds),
-            maxfev=10000,
+            maxfev=100000,
         )
 
         return optimized_parameters
@@ -112,5 +114,5 @@ class CurveFitter:
         :rtype: float
         """
 
-        chi2 = (C * self.wavelength * self.core_index * self.effective_distance) / (2 * np.pi * self.poled_fiber_length * self.field_adjustment_factor * self.ac_voltage)
+        chi2 = (C * self.wavelength * self.field_adjustment_factor * self.core_index * self.effective_distance) / (np.pi * self.poled_fiber_length * self.ac_voltage)
         return chi2

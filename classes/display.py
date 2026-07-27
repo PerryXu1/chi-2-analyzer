@@ -94,7 +94,7 @@ class Display():
             plt.tight_layout()
             plt.show()
 
-    def plot_fitted_curve(self, *, time_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float):
+    def plot_fitted_curve(self, *, time_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float, G: float) -> None:
         """Plots the fitted curve based on the optimized parameters
 
         :param time_array: The array of time values to plot
@@ -111,9 +111,11 @@ class Display():
         :type E: float
         :param F: Curve fit parameter F
         :type F: float
+        :param G: Curve fit parameter G
+        :type G: float
         """
 
-        voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - E)))) + F
+        voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - F)))) + G
 
         plt.figure(figsize=(8, 4))
         plt.plot(time_array, voltage_array, color="royalblue", linewidth=2, label="y = sin(x)")
@@ -129,7 +131,7 @@ class Display():
         plt.tight_layout()
         plt.show()
 
-    def compare_fitted_curve(self, *, fitted_time_array: NDArray[float64], time_array: NDArray[float64], voltage_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float):
+    def compare_fitted_curve(self, *, fitted_time_array: NDArray[float64], time_array: NDArray[float64], voltage_array: NDArray[float64], A: float, B: float, C: float, D: float, E: float, F: float, G:float) ->None:
         """Plots the fitted curve based on the optimized parameters as well as the experimental data points
 
         :param fitted_time_array: The array of time values to plot the fitted curve at
@@ -150,9 +152,11 @@ class Display():
         :type E: float
         :param F: Curve fit parameter F
         :type F: float
+        :param F: Curve fit parameter G
+        :type F: float
         """
 
-        fitted_voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - E)))) + F
+        fitted_voltage_array = A * (1 + np.cos(B * (time_array - E) - C * np.cos(D * (time_array - F)))) + G
 
         plt.figure(figsize=(8, 4))
         plt.plot(
