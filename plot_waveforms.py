@@ -9,8 +9,8 @@ import numpy as np
 
 FOLDER_PATH = "results/waveforms/potential_mode_mismatch"
 
-FILE_PATTERN = os.path.join(FOLDER_PATH, "potential_mode_mismatch_max_nopiezo_10_3000_*.txt")
-OUTPUT_GIF = "potential_mode_mismatch_max_nopiezo_10_3000.gif"
+FILE_PATTERN = os.path.join(FOLDER_PATH, "potential_mode_mismatch_min_nopiezo_10_3000_*.txt")
+OUTPUT_GIF = "potential_mode_mismatch_min_nopiezo_10_3000.gif"
 INTERVAL_MS = 150
 
 file_list = glob.glob(FILE_PATTERN)
