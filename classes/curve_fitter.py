@@ -67,10 +67,6 @@ class CurveFitter:
         :rtype: tuple[float]
         """
 
-        # function to fit
-        def waveform_model(x, A, B, C, D, E, F, G):
-            return A * (1 + np.cos(B * (x - E) - C * np.cos(D * (x - F)))) + G
-
         # CALCULATE GUESSES
         A_guess = (np.max(voltage_array) - np.min(voltage_array)) / 2
 
@@ -86,24 +82,54 @@ class CurveFitter:
         F_guess = 0
 
         G_guess = float(np.min(voltage_array))
+        print(G_guess)
+        print("=====")
+
+        def model_s1(x, A, C, E, G):
+            return A * (1 + np.cos(B_guess * (x - E) - C * np.cos(D_guess * (x - F_guess)))) + G
         
         # Initial guesses
-        initial_guesses = [A_guess, B_guess, C_guess, D_guess, E_guess, F_guess, G_guess]
+        p0_s1 = [A_guess, C_guess, E_guess, G_guess]
+
+        tolerance_s1 = 0.01
 
         # Set physical parameter boundaries
-        lower_bounds = [-np.inf, -np.inf, 0, -np.inf, -np.inf, -np.inf, -np.inf]
-        upper_bounds = [np.inf, np.inf, np.inf, np.inf, np.inf, np.inf, np.inf]
+        lower_bounds_s1 = [A_guess * (1 - tolerance_s1), 0.2, -np.inf, G_guess * (1 - tolerance_s1)]
+        upper_bounds_s1 = [A_guess * (1 + tolerance_s1), np.inf, np.inf, G_guess * (1 + tolerance_s1)]
 
-        optimized_parameters, _ = curve_fit(
-            waveform_model,
+        optimized_parameters_s1, _ = curve_fit(
+            model_s1,
             time_array,
             voltage_array,
-            p0=initial_guesses,
-            bounds=(lower_bounds, upper_bounds),
+            p0=p0_s1,
+            bounds=(lower_bounds_s1, upper_bounds_s1),
             maxfev=100000,
         )
 
-        return optimized_parameters
+        A_s1, C_s1, E_s1, G_s1 = optimized_parameters_s1
+        print(optimized_parameters_s1)
+
+        def model_s2(x, A, B, C, D, E, F, G):
+            return A * (1 + np.cos(B * (x - E) - C * np.cos(D * (x - F)))) + G
+
+        p0_s2 = [A_s1, B_guess, C_s1, D_guess, E_s1, F_guess, G_s1]
+
+        tolerance_s2 = 0.05
+        lower_bounds_s2 = [A_s1 * (1 - tolerance_s2), B_guess * (1 - tolerance_s2), 0.2, D_guess * (1 - tolerance_s2), -np.inf, -np.inf, G_s1 * (1 - tolerance_s2)]
+        upper_bounds_s2 = [A_s1 * (1 + tolerance_s2), B_guess * (1 + tolerance_s2), np.inf, D_guess * (1 + tolerance_s2), np.inf, np.inf, G_s1 * (1 + tolerance_s2)]
+
+        optimized_parameters, _ = curve_fit(
+            model_s2,
+            time_array,
+            voltage_array,
+            p0=p0_s2,
+            bounds=(lower_bounds_s2, upper_bounds_s2),
+            maxfev=100000,
+        )
+        print(optimized_parameters)
+
+
+        return tuple(optimized_parameters)
 
     def get_chi2(self, C: float) -> float:
         """Gets the chi(2) from the optimized C parameter

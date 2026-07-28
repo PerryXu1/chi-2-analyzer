@@ -36,10 +36,10 @@ else:
     time_array = data[:, 0]
     voltage_array = data[:, 1]
     
-    # mask = (time_array >= 0.002) & (time_array <= 0.008)
+    mask = (time_array >= 0.001) & (time_array <= 0.008)
 
-    # time_array = time_array[mask]
-    # voltage_array = voltage_array[mask]
+    time_array = time_array[mask]
+    voltage_array = voltage_array[mask]
 
     curve_fitter = CurveFitter(poled_fiber_length=0.3,
                             core_index=1.45,
