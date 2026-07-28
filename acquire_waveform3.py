@@ -2,12 +2,13 @@ import time
 import pyvisa
 import numpy as np
 from classes.interface import Interface
+import time as tm
 
 ELLIPTICITY = 15
 AZIMUTHAL = 0
 SHOTS = 10
 CHI2 = 0.3230
-VOLTS_PER_DIV = 300e-3
+VOLTS_PER_DIV = 9e-3
 
 CHANNEL = 2
 VISA_ADDRESS = "GPIB0::7::INSTR"  
@@ -16,12 +17,12 @@ WAVELENGTH = 1550e-9
 POLED_LENGTH = 0.3
 EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
-AC_VOLTAGE = 1150
+AC_VOLTAGE = 1194
 ELECTRODE_MATERIAL = "TUNGSTEN"
 TIME = 50
 POLING_VOLTAGE = 4500
-PIEZO_FREQUENCY = 60
-AC_FREQUENCY = 3000
+PIEZO_FREQUENCY = 20
+AC_FREQUENCY = 1000
 
 try:
     scope = Interface(instrument_num=1)
@@ -29,14 +30,14 @@ try:
 
     scope.set_screen(channel=2,
                     volts_per_div=VOLTS_PER_DIV,
-                    time_per_div=1.6e-3,
+                    time_per_div=5e-3,
                     vertical_offset=3 * VOLTS_PER_DIV,
-                    horizontal_offset=8e-3,
+                    horizontal_offset=25e-3,
                     trigger_level=0,
                     ext_trigger=True)
 
     for i in range(SHOTS):
-        filename = f"AC_voltage_dependence_60Hz_3000Hz_10V_{i + 1:03d}.txt"
+        filename = f"H_V_chi2_ratio_20Hz_1000Hz_10V_MIN_{i + 1:03d}.txt"
 
         time, voltage = scope.acquire_signal(channel=2)
 
@@ -50,6 +51,7 @@ try:
         
         data_matrix = np.column_stack((time, voltage))
         np.savetxt(filename, data_matrix, delimiter=",", header=header_info, comments="")
+        tm.sleep(1)
         
     scope.close()
 
