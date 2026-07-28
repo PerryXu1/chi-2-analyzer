@@ -4,7 +4,7 @@ import numpy as np
 
 """Script to plot a single waveform file and dynamically display its header parameters as the title."""
 
-FILENAME = "results/waveforms/waveforms_polarimeter_1/waveform_polarimeter_0_22.5_05.txt"
+FILENAME = "results/waveforms/waveforms_frequency_dependence/frequency_dependence_1k_min05.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found at {FILENAME}")

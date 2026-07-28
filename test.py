@@ -21,7 +21,7 @@ import os
 #                                          SNR=50
 #                                          )
 
-FILENAME = "results/waveforms/waveforms_polarimeter_1/waveform_polarimeter_0_22.5_01.txt"
+FILENAME = r"results\waveforms\waveforms_frequency_dependence\frequency_dependence_1k_max05.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found at {FILENAME}")
@@ -36,25 +36,28 @@ else:
     time_array = data[:, 0]
     voltage_array = data[:, 1]
     
-    # mask = (time_array >= 0.002) & (time_array <= 0.008)
+    mask = (time_array >= 0.005) & (time_array <= 0.03)
 
-    # time_array = time_array[mask]
-    # voltage_array = voltage_array[mask]
+    time_array = time_array[mask]
+    voltage_array = voltage_array[mask]
 
     curve_fitter = CurveFitter(poled_fiber_length=0.3,
                             core_index=1.45,
                             effective_distance=41.1e-6,
                             field_adjustment_factor=1.773777,
                             periods_per_piezo_cycle=2.5,
-                            piezo_frequency=60,
-                            ac_voltage=459.4,
-                            ac_frequency=3000,
+                            piezo_frequency=20,
+                            ac_voltage=239.1,
+                            ac_frequency=1000,
                             wavelength=1550e-9
                             )
 
     A, B, C, D, E, F, G = curve_fitter.fit_waveform(time_array=time_array,
                                         voltage_array=voltage_array,
-                                        estimated_chi2=0.2243e-12)
+                                        estimated_chi2=0.3e-12,
+                                        tolerance_s1=0.01,
+                                        tolerance_s2=0.05,
+                                        min_C=0.2)
 
     display = Display()
 
