@@ -52,7 +52,8 @@ class CurveFitter:
         self.ac_frequency = ac_frequency
         self.wavelength = wavelength
 
-    def fit_waveform(self, *, time_array: NDArray[float64], voltage_array: NDArray[float64], estimated_chi2: float) -> tuple[float]:
+    def fit_waveform(self, *, time_array: NDArray[float64], voltage_array: NDArray[float64], estimated_chi2: float,
+                     tolerance_s1: float = 0.01, tolerance_s2: float = 0.05, min_C: float = 0.2) -> tuple[float]:
         """Fits the equation V = A*(1 + cos(B*(x-E) - C*cos(D*(x-F)))) + G to oscilloscope waveform data
         and returns the optimized C parameter.
         The guesses for the parameters A, E, G are determined through processing the voltage waveform.
@@ -63,6 +64,12 @@ class CurveFitter:
         :type voltage_array: NDArray[float64]
         :param estimated_chi2: The guess of the chi2 of the fiber. Can be inputted manually or paired with the chi2 analyzer
         :type estimated_ch2: float
+        :param tolerance_s1: The tolerances used to set the bounds on A and G in the first round of fitting
+        :type tolerance_s1: float
+        :param tolerance_s2: The tolerances used to set the bounds on A, B, D, G in the second round of fitting
+        :type tolerance_s2: float
+        :param min_C: the lower bound on the fit for C in both rounds of fitting
+        :type min_C: float
         :return: The fit parameters
         :rtype: tuple[float]
         """
@@ -82,8 +89,6 @@ class CurveFitter:
         F_guess = 0
 
         G_guess = float(np.min(voltage_array))
-        print(G_guess)
-        print("=====")
 
         def model_s1(x, A, C, E, G):
             return A * (1 + np.cos(B_guess * (x - E) - C * np.cos(D_guess * (x - F_guess)))) + G
@@ -91,10 +96,8 @@ class CurveFitter:
         # Initial guesses
         p0_s1 = [A_guess, C_guess, E_guess, G_guess]
 
-        tolerance_s1 = 0.01
-
         # Set physical parameter boundaries
-        lower_bounds_s1 = [A_guess * (1 - tolerance_s1), 0.2, -np.inf, G_guess * (1 - tolerance_s1)]
+        lower_bounds_s1 = [A_guess * (1 - tolerance_s1), min_C, -np.inf, G_guess * (1 - tolerance_s1)]
         upper_bounds_s1 = [A_guess * (1 + tolerance_s1), np.inf, np.inf, G_guess * (1 + tolerance_s1)]
 
         optimized_parameters_s1, _ = curve_fit(
@@ -107,15 +110,13 @@ class CurveFitter:
         )
 
         A_s1, C_s1, E_s1, G_s1 = optimized_parameters_s1
-        print(optimized_parameters_s1)
 
         def model_s2(x, A, B, C, D, E, F, G):
             return A * (1 + np.cos(B * (x - E) - C * np.cos(D * (x - F)))) + G
 
         p0_s2 = [A_s1, B_guess, C_s1, D_guess, E_s1, F_guess, G_s1]
 
-        tolerance_s2 = 0.05
-        lower_bounds_s2 = [A_s1 * (1 - tolerance_s2), B_guess * (1 - tolerance_s2), 0.2, D_guess * (1 - tolerance_s2), -np.inf, -np.inf, G_s1 * (1 - tolerance_s2)]
+        lower_bounds_s2 = [A_s1 * (1 - tolerance_s2), B_guess * (1 - tolerance_s2), min_C, D_guess * (1 - tolerance_s2), -np.inf, -np.inf, G_s1 * (1 - tolerance_s2)]
         upper_bounds_s2 = [A_s1 * (1 + tolerance_s2), B_guess * (1 + tolerance_s2), np.inf, D_guess * (1 + tolerance_s2), np.inf, np.inf, G_s1 * (1 + tolerance_s2)]
 
         optimized_parameters, _ = curve_fit(
