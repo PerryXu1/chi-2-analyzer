@@ -178,7 +178,7 @@ class Display():
             label='Fitted Curve'
         )
 
-        plt.title("Fitted Waveform vs. Raw Data", fontsize=12)
+        plt.title("Fitted Waveform vs. Raw Data, Chi(2) = 0.278915410407508", fontsize=12)
         plt.xlabel("Time", fontsize=10)
         plt.ylabel("Voltage", fontsize=10)
         plt.grid(True, linestyle="--", alpha=0.6)

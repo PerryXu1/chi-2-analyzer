@@ -21,7 +21,7 @@ import os
 #                                          SNR=50
 #                                          )
 
-FILENAME = "results/waveforms/waveforms_polarimeter_1/waveform_polarimeter_0_22.5_01.txt"
+FILENAME = "results/waveforms/H_V_chi2_ratio_waveforms/H_V_chi2_ratio_20Hz_1000Hz_3V_MIN_001.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found at {FILENAME}")
@@ -36,7 +36,7 @@ else:
     time_array = data[:, 0]
     voltage_array = data[:, 1]
     
-    # mask = (time_array >= 0.002) & (time_array <= 0.008)
+    # mask = (time_array >= 0.015) & (time_array <= 0.04)
 
     # time_array = time_array[mask]
     # voltage_array = voltage_array[mask]
@@ -46,19 +46,22 @@ else:
                             effective_distance=41.1e-6,
                             field_adjustment_factor=1.773777,
                             periods_per_piezo_cycle=2.5,
-                            piezo_frequency=60,
-                            ac_voltage=459.4,
-                            ac_frequency=3000,
+                            piezo_frequency=20,
+                            ac_voltage=956.3,
+                            ac_frequency=1000,
                             wavelength=1550e-9
                             )
 
     A, B, C, D, E, F, G = curve_fitter.fit_waveform(time_array=time_array,
                                         voltage_array=voltage_array,
-                                        estimated_chi2=0.2243e-12)
+                                        estimated_chi2=0.3e-12,
+                                        tolerance_s1=0.01,
+                                        tolerance_s2=0.1,
+                                        min_C=0.7)
 
     display = Display()
 
-    chi2 = curve_fitter.get_chi2(C)
+    chi2 = curve_fitter.get_chi2(C) * 1e12
     print(chi2)
 
     display.visualize_waveform(time=time_array, voltage=voltage_array)
