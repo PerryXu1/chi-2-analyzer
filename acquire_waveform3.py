@@ -8,7 +8,6 @@ ELLIPTICITY = 15
 AZIMUTHAL = 0
 SHOTS = 10
 CHI2 = 0.3230
-VOLTS_PER_DIV = 9e-3
 
 CHANNEL = 2
 VISA_ADDRESS = "GPIB0::7::INSTR"  
@@ -17,12 +16,15 @@ WAVELENGTH = 1550e-9
 POLED_LENGTH = 0.3
 EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
-AC_VOLTAGE = 1194
+AC_VOLTAGE = 425
 ELECTRODE_MATERIAL = "TUNGSTEN"
 TIME = 50
 POLING_VOLTAGE = 4500
-PIEZO_FREQUENCY = 20
-AC_FREQUENCY = 1000
+AC_FREQUENCY = 6000
+PIEZO_FREQUENCY = AC_FREQUENCY / 50
+
+VOLTS_PER_DIV = 50e-3
+TIME_PER_DIV = 100e-3 / (PIEZO_FREQUENCY)
 
 try:
     scope = Interface(instrument_num=1)
@@ -30,14 +32,14 @@ try:
 
     scope.set_screen(channel=2,
                     volts_per_div=VOLTS_PER_DIV,
-                    time_per_div=5e-3,
+                    time_per_div=TIME_PER_DIV,
                     vertical_offset=3 * VOLTS_PER_DIV,
-                    horizontal_offset=25e-3,
+                    horizontal_offset=5 * TIME_PER_DIV,
                     trigger_level=0,
                     ext_trigger=True)
 
     for i in range(SHOTS):
-        filename = f"H_V_chi2_ratio_20Hz_1000Hz_10V_MIN_{i + 1:03d}.txt"
+        filename = f"frequency_dependence_6k_max{i + 1:03d}.txt"
 
         time, voltage = scope.acquire_signal(channel=2)
 
