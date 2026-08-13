@@ -1,0 +1,3 @@
+Fitted Chi(2): 0.3688 pm/V
+Cutoff Frequency (fc): 1394.53 Hz
+R^2 Score: 0.997231

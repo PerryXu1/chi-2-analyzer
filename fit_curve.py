@@ -21,7 +21,7 @@ import os
 #                                          SNR=50
 #                                          )
 
-FILENAME = "results/waveforms/H_V_chi2_ratio_waveforms/H_V_chi2_ratio_20Hz_1000Hz_3V_MIN_001.txt"
+FILENAME = "results/waveforms/AC_frequency_dependence_2/frequency_dependence_6k_max002.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found at {FILENAME}")
@@ -36,28 +36,28 @@ else:
     time_array = data[:, 0]
     voltage_array = data[:, 1]
     
-    # mask = (time_array >= 0.015) & (time_array <= 0.04)
+    mask = (time_array >= 0.002) & (time_array <= 0.006)
 
-    # time_array = time_array[mask]
-    # voltage_array = voltage_array[mask]
+    time_array = time_array[mask]
+    voltage_array = voltage_array[mask]
 
     curve_fitter = CurveFitter(poled_fiber_length=0.3,
                             core_index=1.45,
                             effective_distance=41.1e-6,
                             field_adjustment_factor=1.773777,
                             periods_per_piezo_cycle=2.5,
-                            piezo_frequency=20,
-                            ac_voltage=956.3,
-                            ac_frequency=1000,
+                            piezo_frequency=120,
+                            ac_voltage=425,
+                            ac_frequency=6000,
                             wavelength=1550e-9
                             )
 
     A, B, C, D, E, F, G = curve_fitter.fit_waveform(time_array=time_array,
                                         voltage_array=voltage_array,
-                                        estimated_chi2=0.3e-12,
-                                        tolerance_s1=0.01,
+                                        estimated_chi2=0.1e-12,
+                                        tolerance_s1=0.001,
                                         tolerance_s2=0.1,
-                                        min_C=0.7)
+                                        min_C=0.05)
 
     display = Display()
 
@@ -85,4 +85,5 @@ else:
                                 D=D,
                                 E=E,
                                 F=F,
-                                G=G)
+                                G=G,
+                                chi2=chi2)
