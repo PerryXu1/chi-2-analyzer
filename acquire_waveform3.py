@@ -16,14 +16,14 @@ WAVELENGTH = 1550e-9
 POLED_LENGTH = 0.3
 EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
-AC_VOLTAGE = 425
-ELECTRODE_MATERIAL = "TUNGSTEN"
+AC_VOLTAGE = 475
+ELECTRODE_MATERIAL = "IRON"
 TIME = 50
 POLING_VOLTAGE = 4500
-AC_FREQUENCY = 6000
+AC_FREQUENCY = 500
 PIEZO_FREQUENCY = AC_FREQUENCY / 50
 
-VOLTS_PER_DIV = 50e-3
+VOLTS_PER_DIV = 500e-3
 TIME_PER_DIV = 100e-3 / (PIEZO_FREQUENCY)
 
 try:
@@ -39,7 +39,7 @@ try:
                     ext_trigger=True)
 
     for i in range(SHOTS):
-        filename = f"frequency_dependence_6k_max{i + 1:03d}.txt"
+        filename = f"frequency_dependence_iron_0.5k_max{i + 1:03d}.txt"
 
         time, voltage = scope.acquire_signal(channel=2)
 
