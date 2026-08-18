@@ -16,14 +16,20 @@ WAVELENGTH = 1550e-9
 POLED_LENGTH = 0.3
 EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
-AC_VOLTAGE = 431.3
-ELECTRODE_MATERIAL = "IRON"
+
+# CHANGE
+AC_VOLTAGE = 1025
+
+ELECTRODE_MATERIAL = "TUNGSTEN"
 TIME = 50
 POLING_VOLTAGE = 4500
+
+# CHANGE
 AC_FREQUENCY = 6000
+
 PIEZO_FREQUENCY = AC_FREQUENCY / 50
 
-VOLTS_PER_DIV = 300e-3
+VOLTS_PER_DIV = 20e-3
 TIME_PER_DIV = 100e-3 / (PIEZO_FREQUENCY)
 
 try:
@@ -33,13 +39,13 @@ try:
     scope.set_screen(channel=2,
                     volts_per_div=VOLTS_PER_DIV,
                     time_per_div=TIME_PER_DIV,
-                    vertical_offset=3 * VOLTS_PER_DIV,
+                    vertical_offset=4 * VOLTS_PER_DIV,
                     horizontal_offset=5 * TIME_PER_DIV,
                     trigger_level=0,
                     ext_trigger=True)
 
     for i in range(SHOTS):
-        filename = f"frequency_dependence_iron_6k_max{i + 1:03d}.txt"
+        filename = f"frequency_dependence_tungsten_{str(AC_FREQUENCY)}_max{i + 1:03d}.txt"
 
         time, voltage = scope.acquire_signal(channel=2)
 
