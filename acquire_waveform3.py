@@ -17,20 +17,18 @@ POLED_LENGTH = 0.3
 EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
 
-# CHANGE
-AC_VOLTAGE = 1025
-
 ELECTRODE_MATERIAL = "TUNGSTEN"
 TIME = 50
 POLING_VOLTAGE = 4500
-
-# CHANGE
-AC_FREQUENCY = 6000
+AC_FREQUENCY = 3000
 
 PIEZO_FREQUENCY = AC_FREQUENCY / 50
 
 VOLTS_PER_DIV = 20e-3
 TIME_PER_DIV = 100e-3 / (PIEZO_FREQUENCY)
+
+# CHANGE
+AC_VOLTAGE = 1150
 
 try:
     scope = Interface(instrument_num=1)
@@ -45,7 +43,7 @@ try:
                     ext_trigger=True)
 
     for i in range(SHOTS):
-        filename = f"frequency_dependence_tungsten_{str(AC_FREQUENCY)}_max{i + 1:03d}.txt"
+        filename = f"AC_voltage_dependence_tungsten_10_max{i + 1:03d}.txt"
 
         time, voltage = scope.acquire_signal(channel=2)
 
