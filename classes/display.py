@@ -164,11 +164,12 @@ class Display():
         plt.plot(
             time_array, 
             voltage_array, 
-            linestyle='none', 
-            marker='o', 
-            markersize=3, 
-            color='gray', 
-            alpha=0.5, 
+            # linestyle='none', 
+            # marker='o', 
+            # markersize=3, 
+            linewidth=2,
+            color='blue', 
+            # alpha=0.5, 
             label='Experimental Data Points'
         )
 
