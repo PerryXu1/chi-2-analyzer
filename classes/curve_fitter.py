@@ -116,8 +116,8 @@ class CurveFitter:
 
         p0_s2 = [A_s1, B_guess, C_s1, D_guess, E_s1, F_guess, G_s1]
 
-        lower_bounds_s2 = [A_s1 * (1 - tolerance_s2), B_guess * (1 - tolerance_s2), min_C, D_guess * (1 - tolerance_s2), -np.inf, -np.inf, G_s1 * (1 - tolerance_s2)]
-        upper_bounds_s2 = [A_s1 * (1 + tolerance_s2), B_guess * (1 + tolerance_s2), np.inf, D_guess * (1 + tolerance_s2), np.inf, np.inf, G_s1 * (1 + tolerance_s2)]
+        lower_bounds_s2 = [A_s1 * (1 - tolerance_s2), B_guess * (1 - tolerance_s2), min_C, D_guess * (1 - tolerance_s2), -np.inf, F_guess - np.pi / 2, G_s1 * (1 - tolerance_s2)]
+        upper_bounds_s2 = [A_s1 * (1 + tolerance_s2), B_guess * (1 + tolerance_s2), np.inf, D_guess * (1 + tolerance_s2), np.inf, F_guess + np.pi / 2, G_s1 * (1 + tolerance_s2)]
 
         optimized_parameters, _ = curve_fit(
             model_s2,

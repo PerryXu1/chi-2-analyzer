@@ -4,24 +4,7 @@ import numpy as np
 from classes.display import Display
 import os
 
-# time_array = np.linspace(0, 10e-3, 2000)
-# sim = Simulator(time_array)
-# voltage_array = sim.noisy_modulated_sine(Vpp=1,
-#                                          phase_mod_cycles=2.5,
-#                                          phase_mod_frequency=120,
-#                                          fiber_length=0.3,
-#                                          wavelength=1550e-9,
-#                                          chi2=0.15e-12,
-#                                          core_index=1.45,
-#                                          ac_voltage=240,
-#                                          eff_distance=41.1e-6,
-#                                          field_adjustment_factor=1.773777,
-#                                          ac_frequency=3000,
-#                                          t_offset=0,
-#                                          SNR=50
-#                                          )
-
-FILENAME = "results/waveforms/AC_frequency_dependence_3/frequency_dependence_tungsten_250_max002.txt"
+FILENAME = "results/waveforms/AC_frequency_dependence_2/frequency_dependence_0.5k_max001.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found at {FILENAME}")
@@ -38,7 +21,7 @@ else:
     
     print(max(voltage_array) - min(voltage_array))
     
-    # mask = (time_array >= 0.00) & (time_array <= 0.1)
+    # mask = (time_array >= 0) & (time_array <= 0.025)
 
     # time_array = time_array[mask]
     # voltage_array = voltage_array[mask]
@@ -50,16 +33,18 @@ else:
                             periods_per_piezo_cycle=2.5,
                             piezo_frequency=10,
                             ac_voltage=1234,
-                            ac_frequency=250,
+                            ac_frequency=500,
                             wavelength=1550e-9
                             )
 
     A, B, C, D, E, F, G = curve_fitter.fit_waveform(time_array=time_array,
                                         voltage_array=voltage_array,
-                                        estimated_chi2=0.3e-12,
+                                        estimated_chi2=0.32e-12,
                                         tolerance_s1=0.1,
                                         tolerance_s2=0.1,
-                                        min_C=0.1)
+                                        min_C=2)
+    
+    print(F)
 
     display = Display()
 
