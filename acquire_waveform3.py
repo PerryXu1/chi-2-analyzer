@@ -20,15 +20,17 @@ CORE_INDEX = 1.45
 ELECTRODE_MATERIAL = "TUNGSTEN"
 TIME = 50
 POLING_VOLTAGE = 4500
-AC_FREQUENCY = 3000
+
+# CHANGE
+AC_FREQUENCY = 6000
 
 PIEZO_FREQUENCY = AC_FREQUENCY / 50
 
-VOLTS_PER_DIV = 20e-3
+VOLTS_PER_DIV = 3e-3
 TIME_PER_DIV = 100e-3 / (PIEZO_FREQUENCY)
 
 # CHANGE
-AC_VOLTAGE = 1150
+AC_VOLTAGE = 643.7
 
 try:
     scope = Interface(instrument_num=1)
@@ -37,13 +39,13 @@ try:
     scope.set_screen(channel=2,
                     volts_per_div=VOLTS_PER_DIV,
                     time_per_div=TIME_PER_DIV,
-                    vertical_offset=4 * VOLTS_PER_DIV,
+                    vertical_offset=3 * VOLTS_PER_DIV,
                     horizontal_offset=5 * TIME_PER_DIV,
                     trigger_level=0,
                     ext_trigger=True)
 
     for i in range(SHOTS):
-        filename = f"AC_voltage_dependence_tungsten_10_max{i + 1:03d}.txt"
+        filename = f"AC_frequency_dependence_ps_{str(AC_FREQUENCY)}_max{i + 1:03d}.txt"
 
         time, voltage = scope.acquire_signal(channel=2)
 
