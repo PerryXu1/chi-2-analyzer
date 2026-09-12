@@ -4,7 +4,7 @@ import numpy as np
 from classes.display import Display
 import os
 
-FILENAME = "results/waveforms/AC_frequency_dependence_2/frequency_dependence_0.5k_max001.txt"
+FILENAME = "results/waveforms/pure_silica/AC_frequency_dependence_1/AC_frequency_dependence_ps_6000_max001.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found at {FILENAME}")
@@ -21,31 +21,29 @@ else:
     
     print(max(voltage_array) - min(voltage_array))
     
-    # mask = (time_array >= 0) & (time_array <= 0.025)
+    mask = (time_array >= 0.002) & (time_array <= 0.006)
 
-    # time_array = time_array[mask]
-    # voltage_array = voltage_array[mask]
+    time_array = time_array[mask]
+    voltage_array = voltage_array[mask]
 
     curve_fitter = CurveFitter(poled_fiber_length=0.3,
                             core_index=1.45,
-                            effective_distance=41.1e-6,
-                            field_adjustment_factor=1.77377708245,
+                            effective_distance=31e-6,
+                            field_adjustment_factor=2.0486,
                             periods_per_piezo_cycle=2.5,
-                            piezo_frequency=10,
-                            ac_voltage=1234,
-                            ac_frequency=500,
+                            piezo_frequency=120,
+                            ac_voltage=643.7,
+                            ac_frequency=6000,
                             wavelength=1550e-9
                             )
 
     A, B, C, D, E, F, G = curve_fitter.fit_waveform(time_array=time_array,
                                         voltage_array=voltage_array,
-                                        estimated_chi2=0.32e-12,
+                                        estimated_chi2=0.1e-12,
                                         tolerance_s1=0.1,
                                         tolerance_s2=0.1,
-                                        min_C=2)
+                                        min_C=0.05)
     
-    print(F)
-
     display = Display()
 
     chi2 = curve_fitter.get_chi2(C) * 1e12

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 
-csv_file_path = "results/data/Amplitude_vs_AC_voltage_iron.csv"
+csv_file_path = "results/data/Chi2_vs_AC_frequency_pure_silica.csv"
 
 df = pd.read_csv(csv_file_path)
 

@@ -7,7 +7,7 @@ frequencies = np.arange(250, 6250, 250)
 mean_amplitudes = []
 
 for freq in frequencies:
-    file_format = f"results/waveforms/AC_frequency_dependence_3/frequency_dependence_tungsten_{freq}_max"
+    file_format = f"results/waveforms/pure_silica/AC_frequency_dependence_1/AC_frequency_dependence_ps_{freq}_max"
 
     amplitudes = []
     # Loop over 001 to 009

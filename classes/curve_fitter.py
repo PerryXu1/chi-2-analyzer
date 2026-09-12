@@ -95,11 +95,14 @@ class CurveFitter:
         
         # Initial guesses
         p0_s1 = [A_guess, C_guess, E_guess, G_guess]
-
+    
         # Set physical parameter boundaries
-        lower_bounds_s1 = [A_guess * (1 - tolerance_s1), min_C, -np.inf, G_guess * (1 - tolerance_s1)]
-        upper_bounds_s1 = [A_guess * (1 + tolerance_s1), np.inf, np.inf, G_guess * (1 + tolerance_s1)]
+        lower_bounds_s1 = [A_guess * (1 - tolerance_s1), min_C, -np.inf, -np.abs(G_guess * (1 + tolerance_s1))]
+        upper_bounds_s1 = [A_guess * (1 + tolerance_s1), np.inf, np.inf, np.abs(G_guess * (1 + tolerance_s1))]
 
+        print(p0_s1)
+        print(lower_bounds_s1)
+        print(upper_bounds_s1)
         optimized_parameters_s1, _ = curve_fit(
             model_s1,
             time_array,
@@ -108,7 +111,7 @@ class CurveFitter:
             bounds=(lower_bounds_s1, upper_bounds_s1),
             maxfev=100000,
         )
-
+        
         A_s1, C_s1, E_s1, G_s1 = optimized_parameters_s1
 
         def model_s2(x, A, B, C, D, E, F, G):
@@ -116,8 +119,8 @@ class CurveFitter:
 
         p0_s2 = [A_s1, B_guess, C_s1, D_guess, E_s1, F_guess, G_s1]
 
-        lower_bounds_s2 = [A_s1 * (1 - tolerance_s2), B_guess * (1 - tolerance_s2), min_C, D_guess * (1 - tolerance_s2), -np.inf, F_guess - np.pi / 2, G_s1 * (1 - tolerance_s2)]
-        upper_bounds_s2 = [A_s1 * (1 + tolerance_s2), B_guess * (1 + tolerance_s2), np.inf, D_guess * (1 + tolerance_s2), np.inf, F_guess + np.pi / 2, G_s1 * (1 + tolerance_s2)]
+        lower_bounds_s2 = [A_s1 * (1 - tolerance_s2), B_guess * (1 - tolerance_s2), min_C, D_guess * (1 - tolerance_s2), -np.inf, -np.inf, -np.abs(G_s1 * (1 + tolerance_s1))]
+        upper_bounds_s2 = [A_s1 * (1 + tolerance_s2), B_guess * (1 + tolerance_s2), np.inf, D_guess * (1 + tolerance_s2), np.inf, np.inf, np.abs(G_s1 * (1 + tolerance_s1))]
 
         optimized_parameters, _ = curve_fit(
             model_s2,
