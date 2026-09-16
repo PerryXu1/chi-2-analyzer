@@ -1,7 +1,7 @@
 import time
 import pyvisa
 import numpy as np
-from classes.interface import HP54600B
+from classes.interface import HP54600B, Agilent33120A, Agilent33250A, WaveformShape
 import time as tm
 
 ELLIPTICITY = 15
@@ -33,6 +33,8 @@ TIME_PER_DIV = 100e-3 / (PIEZO_FREQUENCY)
 AC_VOLTAGE = 1025
 
 try:
+    awg1 = A
+
     scope = HP54600B(instrument_num=1)
     scope.reset()
 

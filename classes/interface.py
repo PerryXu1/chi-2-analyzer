@@ -215,8 +215,8 @@ class AWG(ABC):
 
     :param instrument_num: GPIB address of the AWG (1 to 30).
     :type instrument_num: int
-    :param default_shape: Default function shape ('SIN', 'RAMP', etc.) for reset.
-    :type default_shape: Optional[str]
+    :param default_shape: Default function shape for reset.
+    :type default_shape: Optional[WaveformShape]
     :param default_frequency: Default frequency in Hz for reset.
     :type default_frequency: Optional[float]
     :param default_voltage: Default amplitude in Vpp for reset.
@@ -228,13 +228,13 @@ class AWG(ABC):
     def __init__(
         self,
         instrument_num: int = 1,
-        default_shape: Optional[str] = None,
+        default_shape: Optional[WaveformShape] = None,
         default_frequency: Optional[float] = None,
         default_voltage: Optional[float] = None,
         default_symmetry: Optional[float] = None,
     ):
         self.instrument_num = instrument_num
-        self.default_shape = default_shape.upper() if default_shape else None
+        self.default_shape = default_shape
         self.default_frequency = default_frequency
         self.default_voltage = default_voltage
         self.default_symmetry = default_symmetry
