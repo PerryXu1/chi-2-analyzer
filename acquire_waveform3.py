@@ -20,8 +20,8 @@ SHOTS = 5
 VOLTS_PER_DIV = 3e-3
 
 # VOLTAGE FUNCTION
-TAU = 1250
-INITIAL_VALUE = 4
+TAU = 1500
+INITIAL_VALUE = 3
 FINAL_VALUE = 10
 
 def voltage_function(frequency: float) -> int:
@@ -33,9 +33,9 @@ def voltage_function(frequency: float) -> int:
     :rtype: int
     """
     A = FINAL_VALUE - INITIAL_VALUE
-    return int(round(A * (1 - np.exp(-frequency/TAU)) + INITIAL_VALUE))
+    return int(round(A * (1 - np.exp(-frequency / TAU)) + INITIAL_VALUE))
 
-ac_frequencies = range(250, 301, 5)
+ac_frequencies = range(1000, 6001, 1000)
 
 try:
     awg_piezo = Agilent33250A(instrument_num=12,
@@ -53,12 +53,13 @@ try:
         awg_piezo.output_on()
         awg_eo.reset()
         
-        piezo_frequency = ac_frequencies / FREQUENCY_RATIO
+        piezo_frequency = ac_frequency / FREQUENCY_RATIO
         
         awg_piezo.change_frequency(piezo_frequency)
-        awg_eo.change_frequency(ac_frequencies)
+        awg_eo.change_frequency(ac_frequency)
         
         ac_voltage = voltage_function(ac_frequency) # set value
+        awg_eo.change_voltage(ac_voltage)
         
         scope.set_screen(channel=1,
                     volts_per_div=ac_voltage / 8, # 5 divs so technically should be 10, 8 as buffer
