@@ -97,9 +97,12 @@ class CurveFitter:
         p0_s1 = [A_guess, C_guess, E_guess, G_guess]
     
         # Set physical parameter boundaries
-        lower_bounds_s1 = [A_guess * (1 - tolerance_s1), min_C, -np.inf, -np.abs(G_guess * (1 + tolerance_s1))]
-        upper_bounds_s1 = [A_guess * (1 + tolerance_s1), np.inf, np.inf, np.abs(G_guess * (1 + tolerance_s1))]
-
+        if G_guess != 0:
+            lower_bounds_s1 = [A_guess * (1 - tolerance_s1), min_C, -np.inf, -np.abs(G_guess * (1 + tolerance_s1))]
+            upper_bounds_s1 = [A_guess * (1 + tolerance_s1), np.inf, np.inf, np.abs(G_guess * (1 + tolerance_s1))]
+        else:
+            lower_bounds_s1 = [A_guess * (1 - tolerance_s1), min_C, -np.inf, -0.00001]
+            upper_bounds_s1 = [A_guess * (1 + tolerance_s1), np.inf, np.inf, 0.00001]
         print(p0_s1)
         print(lower_bounds_s1)
         print(upper_bounds_s1)

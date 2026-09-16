@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 
-csv_file_path = "results/data/Chi2_vs_AC_frequency_pure_silica.csv"
+csv_file_path = "results/data/Chi2_vs_AC_frequency_pure_silica_2.csv"
 
 df = pd.read_csv(csv_file_path)
 
@@ -102,7 +102,7 @@ plt.xlim(f_min_plot, f_max_plot)
 plt.xlabel("AC Frequency (Hz)", fontsize=11)
 plt.ylabel("Max Chi(2)", fontsize=11)
 plt.title(
-    "Max Chi(2) vs. AC Frequency, Tungsten (Log-Log Scale)",
+    "Max Chi(2) vs. AC Frequency, Pure Silica (Log-Log Scale)",
     fontsize=13,
 )
 plt.grid(True, which="both", linestyle="--", alpha=0.6)

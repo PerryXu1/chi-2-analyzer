@@ -1,7 +1,7 @@
 import time
 import pyvisa
 import numpy as np
-from classes.interface import Interface
+from classes.interface import HP54600B
 import time as tm
 
 ELLIPTICITY = 15
@@ -33,7 +33,7 @@ TIME_PER_DIV = 100e-3 / (PIEZO_FREQUENCY)
 AC_VOLTAGE = 1025
 
 try:
-    scope = Interface(instrument_num=1)
+    scope = HP54600B(instrument_num=1)
     scope.reset()
 
     scope.set_screen(channel=2,

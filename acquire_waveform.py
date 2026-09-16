@@ -1,5 +1,5 @@
 from classes.analyzer import Analyzer
-from classes.interface import Interface
+from classes.interface import HP54600B
 import numpy as np
 import time as tm
 
@@ -23,7 +23,7 @@ analyzer = Analyzer(core_index=1.5,
                     driver_frequency=100,
                     phase_mod_cycles=2.5)
 
-scope = Interface(instrument_num=1)
+scope = HP54600B(instrument_num=1)
 scope.reset()
 
 for i in range(SHOTS):
