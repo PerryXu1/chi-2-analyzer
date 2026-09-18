@@ -40,25 +40,25 @@ VOLTS_PER_DIV = 10e-3
 
 def voltage_function(frequency: float) -> int:
     if 0 <= frequency < 500:
-        return 7
+        return 2
     elif 500 <= frequency < 1000:
-       return 9
+       return 3
     elif 1000 <= frequency < 1500:
-       return 9
+       return 4
     elif 1500 <= frequency < 2000:
-       return 9
+       return 5
     elif 2000 <= frequency < 2500:
-       return 10
+       return 6
     elif 2500 <= frequency < 3000:
-       return 10
+       return 7
     elif 3000 <= frequency < 3500:
-       return 10
+       return 8
     elif 3500 <= frequency < 4000:
-       return 10
+       return 8
     elif 4000 <= frequency < 4500:
-       return 10
+       return 9
     elif 4500 <= frequency < 5000:
-       return 10
+       return 9
     elif 5000 <= frequency < 5500:
        return 10
     elif 5500 <= frequency <= 6000:

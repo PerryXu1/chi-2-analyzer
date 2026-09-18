@@ -17,11 +17,13 @@ FREQUENCY_RATIO = 50  # AC_FREQUENCY / PIEZO_FREQUENCY
 SHOT_DELAY = 0.5
 VOLTAGE_MEASUREMENT_DELAY = 3
 
-SHOTS = 5
+SHOTS = 30
 VOLTS_PER_DIV = 10e-3
 
 ac_frequencies = list(range(250, 6000, 500))
+ac_frequencies = [1000]
 ac_voltages = list(range(5, 11))
+ac_voltages = [4]
 
 
 try:

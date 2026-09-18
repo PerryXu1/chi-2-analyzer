@@ -4,7 +4,7 @@ import numpy as np
 from classes.display import Display
 import os
 raw_header = ""
-FILENAME = "results/waveforms/pure_silica/AC_frequency_dependence_2_1/AC_frequency_dependence_ps_2000_max005.txt"
+FILENAME = "TEST_1000_4_4.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found")
@@ -34,7 +34,7 @@ else:
     
     print(max(voltage_array) - min(voltage_array))
     
-    mask = (time_array >= 0.005) & (time_array <= 0.015)
+    mask = (time_array >= 0.008) & (time_array <= 0.027)
 
     time_array = time_array[mask]
     voltage_array = voltage_array[mask]
@@ -45,17 +45,17 @@ else:
                             field_adjustment_factor=2.0486,
                             periods_per_piezo_cycle=2.5,
                             piezo_frequency=piezo_frequency,
-                            ac_voltage=ac_voltage,
+                            ac_voltage=470,
                             ac_frequency=ac_frequency,
                             wavelength=1550e-9
                             )
 
     A, B, C, D, E, F, G = curve_fitter.fit_waveform(time_array=time_array,
                                         voltage_array=voltage_array,
-                                        estimated_chi2=0.3e-12,
+                                        estimated_chi2=0.4e-12,
                                         tolerance_s1=0.01,
-                                        tolerance_s2=0.01,
-                                        min_C=0.3)
+                                        tolerance_s2=0.1,
+                                        min_C=0.525)
     
     display = Display()
 
