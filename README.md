@@ -78,7 +78,7 @@ $$C = \frac{\pi L}{\lambda}\,\frac{\chi^{(2)}}{n_{\text{core}}}\,\frac{V_{\text{
 
 so
 
-$$\boxed{\;\chi^{(2)} = \frac{C\,\lambda\, f\, n_{\text{core}}\, d_{\text{eff}}}{\pi\, L\, V_{\text{AC}}}\;}$$
+$$\chi^{(2)} = \dfrac{n_{core} \lambda d_{eff}}{\pi V_{ac} L} \sin\left(\dfrac{\Delta V}{V_{max}}\right)$$
 
 | Symbol | Meaning |
 |---|---|
