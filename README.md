@@ -310,4 +310,4 @@ Released under the [MIT License](LICENSE).
 
 Developed at the University of Toronto, Department of Electrical and Computer Engineering, in Professor Li Qian's lab. Thanks to Andi Shahaj and Professor Li Qian.
 
-**Reference:** F. De Lucia, D. W. Keefer, C. Corbari, and P. J. A. Sazio, "Thermal poling of silica optical fibers using liquid electrodes," *Opt. Lett.* 42(1), 69–72 (2017).
+**Reference:** J. Zhang, "Thermal poling of twin-hole fibers," M.A.Sc. thesis, Grad. Dept. of Elect. and Comput. Eng., Univ. of Toronto, Toronto, ON, Canada, 2008.
