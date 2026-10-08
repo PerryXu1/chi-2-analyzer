@@ -30,7 +30,7 @@ where $L$ is the length of the nonlinear medium. The current best material is **
 
 **Poled silica fiber (PSF)** is a promising alternative. Ordinary silica fiber has no $\chi^{(2)}$, but thermally poling a twin-hole fiber freezes a strong internal electric field into the glass. Combined with silica's intrinsic third-order nonlinearity, this creates an effective second-order nonlinearity:
 
-$$\chi^{(2)} \;\sim\; 3\,\chi^{(3)} E_{\text{internal}}$$
+$$\chi^{(2)} = 3\,\chi^{(3)} E_{\text{DC}}$$
 
 PSF is already fiber-integrated, is not length-limited in principle (our samples are ~30 cm, already 10× longer than PPLN), and is cheap to produce. Its weakness is that $\chi^{(2)}$ has historically been too low. The best previously reported value was ~0.12 pm/V (De Lucia et al., *Opt. Lett.* 42, 2017), which would need several metres of fiber to match PPLN.
 
