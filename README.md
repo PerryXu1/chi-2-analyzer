@@ -21,7 +21,7 @@ The repo is a set of reusable Python classes (instrument control, waveform simul
 
 Many areas of modern optics (frequency conversion, green lasers, entangled-photon generation) depend on **nonlinear optical effects**. These only occur in certain materials, and the efficiency of a second-order process scales as
 
-$$\eta \;\propto\; \left(\chi^{(2)}\right)^2 L^2$$
+$$\text{Eff} \propto \left(\chi^{(2)}\right)^2 L^2$$
 
 where $L$ is the length of the nonlinear medium. The current best material is **periodically poled lithium niobate (PPLN)**, with $\chi^{(2)} \approx 30\ \text{pm/V}$. It is a bulk crystal, which brings real limitations:
 
@@ -74,7 +74,7 @@ $$V=A\left[1 + \cos(B(x-E) - C \cos(D(x-F)))\right] + G$$
 
 The AC field across the electrodes changes the core index by $\Delta n = \chi^{(2)} E / n_{\text{core}}$. Over a poled length $L$ this accumulates a phase swing of amplitude
 
-$$C = \frac{\pi L}{\lambda}\,\frac{\chi^{(2)}}{n_{\text{core}}}\,\frac{V_{\text{AC}}}{f\, d_{\text{eff}}}$$
+$$C = \frac{\pi L}{\lambda}\frac{\chi^{(2)}}{n_{\text{core}}}\frac{V_{\text{AC}}}{f d_{\text{eff}}}$$
 
 so
 
@@ -93,11 +93,11 @@ $$\chi^{(2)} = \dfrac{n_{core} \lambda d_{eff}}{\pi V_{ac} L} \sin\left(\dfrac{\
 
 Near the steepest point of the large wave the signal is $\tfrac{V_{\max}}{2}\left[1 + \sin(C\cos\omega t)\right]$, which swings between $\pm\sin C$. Its peak-to-peak size is therefore $V_{\max}\sin C$, giving
 
-$$\frac{\Delta V}{V_{\max}} = \sin C \quad\Longrightarrow\quad C = \arcsin\!\left(\frac{\Delta V}{V_{\max}}\right)$$
+$$\frac{\Delta V}{V_{\max}} = \sin C \quad\Longrightarrow\quad C = \arcsin\left(\frac{\Delta V}{V_{\max}}\right)$$
 
 For small modulation, $C \approx \Delta V / V_{\max}$. Substituting into the boxed equation above gives the formula used by the `Analyzer`:
 
-$$\chi^{(2)} = \frac{n_{\text{core}}\,\lambda\, d_{\text{eff}}}{\pi\, L\, V_{\text{AC}}}\,\arcsin\!\left(\frac{\Delta V}{V_{\max}}\right)$$
+$$\chi^{(2)} = \frac{n_{\text{core}}\lambda d_{\text{eff}}}{\pi L V_{\text{AC}}}\arcsin\left(\frac{\Delta V}{V_{\max}}\right)$$
 
 (The `Analyzer` uses the parallel-plate approximation, i.e. $f = 1$. Multiply its result by $f$ to match the `CurveFitter` convention.)
 
