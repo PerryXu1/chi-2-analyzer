@@ -3,8 +3,9 @@ from classes.curve_fitter import CurveFitter
 import numpy as np
 from classes.display import Display
 import os
+
 raw_header = ""
-FILENAME = "TEST_1000_4_4.txt"
+FILENAME = "results/waveforms/pure_silica/AC_frequency_dependence_3_1/AC_frequency_dependence_ps_460_max002.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found")
@@ -23,9 +24,6 @@ else:
     ac_voltage = float(params["AC_VOLTAGE"])
     ac_frequency = float(params["AC_FREQUENCY"])
     piezo_frequency = float(params["PIEZO_FREQUENCY"])
-    print(ac_voltage)
-    print(ac_frequency)
-    print(piezo_frequency)
 
     data = np.loadtxt(FILENAME, skiprows=2, delimiter=",")
     
@@ -34,10 +32,10 @@ else:
     
     print(max(voltage_array) - min(voltage_array))
     
-    mask = (time_array >= 0.008) & (time_array <= 0.027)
+    # mask = (time_array >= 0.01) & (time_array <= 0.05)
 
-    time_array = time_array[mask]
-    voltage_array = voltage_array[mask]
+    # time_array = time_array[mask]
+    # voltage_array = voltage_array[mask]
 
     curve_fitter = CurveFitter(poled_fiber_length=0.3,
                             core_index=1.45,
@@ -45,7 +43,7 @@ else:
                             field_adjustment_factor=2.0486,
                             periods_per_piezo_cycle=2.5,
                             piezo_frequency=piezo_frequency,
-                            ac_voltage=470,
+                            ac_voltage=ac_voltage,
                             ac_frequency=ac_frequency,
                             wavelength=1550e-9
                             )
@@ -53,9 +51,9 @@ else:
     A, B, C, D, E, F, G = curve_fitter.fit_waveform(time_array=time_array,
                                         voltage_array=voltage_array,
                                         estimated_chi2=0.4e-12,
-                                        tolerance_s1=0.01,
-                                        tolerance_s2=0.1,
-                                        min_C=0.525)
+                                        tolerance_s1=1,
+                                        tolerance_s2=1,
+                                        min_C=0.48)
     
     display = Display()
 

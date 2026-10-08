@@ -137,6 +137,86 @@ class CurveFitter:
 
 
         return tuple(optimized_parameters)
+    
+    def fit_waveform_frequency(self, *, time_array: NDArray[np.float64], voltage_array: NDArray[np.float64], estimated_chi2: float,
+                     max_harmonic: int = 6, search_radius_hz: float = 100.0, min_C: float = 0.01) -> tuple[float]:
+        """Fits the equation V = A*(1 + cos(B*(x-E) - C*cos(D*(x-F)))) + G to oscilloscope waveform data
+        by transforming it to the frequency domain and fitting the sideband magnitudes to Bessel functions.
+        Returns the parameters, with the optimized C parameter representing the phase modulation index.
+
+        :param time_array: Time array (x-values)
+        :type time_array: NDArray[np.float64]
+        :param voltage_array: Voltage array (y-values)
+        :type voltage_array: NDArray[np.float64]
+        :param estimated_chi2: The guess of the chi2 of the fiber. Can be inputted manually or paired with the chi2 analyzer
+        :type estimated_chi2: float
+        :param max_harmonic: The maximum harmonic order of the EOM frequency to extract and fit in the frequency domain
+        :type max_harmonic: int
+        :param search_radius_hz: The radius in Hz around each harmonic to search for the peak magnitude
+        :type search_radius_hz: float
+        :param min_C: the lower bound on the fit for C
+        :type min_C: float
+        :return: The fit parameters (A, B, C, D, E, F, G). C is fitted in frequency space; others are heuristically estimated.
+        :rtype: tuple[float]
+        """
+        from scipy.fft import rfft, rfftfreq
+        from scipy.optimize import curve_fit
+        from scipy.special import jv
+
+        A_guess = (np.max(voltage_array) - np.min(voltage_array)) / 2
+        B_guess = self.periods_per_piezo_cycle * 2 * np.pi * self.piezo_frequency
+        C_guess = ((np.pi * self.poled_fiber_length) / self.wavelength) * (estimated_chi2 / self.core_index) * (self.ac_voltage / (self.effective_distance * self.field_adjustment_factor))
+        D_guess = 2 * np.pi * self.ac_frequency
+        
+        max_idx = np.argmax(voltage_array)
+        E_guess = time_array[max_idx]
+        F_guess = 0.0
+        G_guess = float(np.min(voltage_array))
+
+        N = len(time_array)
+        dt = time_array[1] - time_array[0]
+        
+        window = np.hanning(N)
+        windowed_voltage = (voltage_array - np.mean(voltage_array)) * window
+        
+        fft_spectrum = np.abs(rfft(windowed_voltage)) * (2.0 / N)
+        freq_array = rfftfreq(N, d=dt)
+
+        harmonic_orders = np.arange(1, max_harmonic + 1)
+        peak_magnitudes = []
+
+        for n in harmonic_orders:
+            target_freq = n * self.ac_frequency
+            
+            freq_mask = (freq_array >= target_freq - search_radius_hz) & \
+                        (freq_array <= target_freq + search_radius_hz)
+            
+            if np.any(freq_mask):
+                sub_spectrum = fft_spectrum[freq_mask]
+                peak_magnitudes.append(np.max(sub_spectrum))
+            else:
+                peak_magnitudes.append(0.0)
+
+        peak_magnitudes_db = 20 * np.log10(np.array(peak_magnitudes) + 1e-12)
+
+        def bessel_model_db(n, A_db, C_param):
+            bessel_vals = np.abs(jv(n, C_param))
+            return A_db + 20 * np.log10(bessel_vals + 1e-12)
+
+        p0 = [np.max(peak_magnitudes_db), max(C_guess, min_C)]
+        bounds = ([-np.inf, min_C], [np.inf, np.inf])
+
+        optimized_parameters, _ = curve_fit(
+            bessel_model_db,
+            harmonic_orders,
+            peak_magnitudes_db,
+            p0=p0,
+            bounds=bounds,
+            maxfev=100000
+        )
+        _, C_fit = optimized_parameters
+
+        return (A_guess, B_guess, C_fit, D_guess, E_guess, F_guess, G_guess)
 
     def get_chi2(self, C: float) -> float:
         """Gets the chi(2) from the optimized C parameter
