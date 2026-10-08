@@ -59,7 +59,7 @@ The measurement uses a fiber interferometer with the PSF in one arm.
 
 The detected signal is modeled as
 
-$$V(t) = A\Big[\,1 + \cos\big(B\,(t - E) - C\cos\big(D\,(t - F)\big)\big)\Big] + G$$
+$$V=A\left[1 + \cos(B(x-E) - C \cos(D(x-F)))\right] + G$$
 
 | Parameter | Meaning | Code guess |
 |---|---|---|
