@@ -180,7 +180,7 @@ Matplotlib helpers for visualizing data, analyzed or not:
 - `plot_fitted_curve()`: the model curve from a set of fitted parameters.
 - `compare_fitted_curve()`: fit overlaid on the experimental data, labelled with the resulting χ⁽²⁾.
 
-### `interface` (`classes/interface.py`)
+### `Interface` (`classes/interface.py`)
 
 Drivers for the lab equipment over GPIB (via PyVISA), used to build fully automated experiment scripts:
 
