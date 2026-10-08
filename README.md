@@ -124,7 +124,7 @@ Pinning the frequencies first avoids the fit collapsing into one of the many loc
 
 Phase modulation produces a spectrum much like an electro-optic frequency comb. By the Jacobi–Anger expansion,
 
-$$\cos\!\big(\theta(t) - C\cos\omega t\big) = \operatorname{Re}\!\Big[e^{i\theta(t)} \sum_{n=-\infty}^{\infty} (-i)^n J_n(C)\, e^{i n \omega t}\Big]$$
+$$\cos\big(\theta(t) - C\cos\omega t\big) = \text{Re}\Big[e^{i\theta(t)} \sum_{n=-\infty}^{\infty} (-i)^n J_n(C)\, e^{i n \omega t}\Big]$$
 
 so the sideband at the $n$-th harmonic of the AC frequency has a magnitude proportional to the Bessel function $|J_n(C)|$. `CurveFitter.fit_waveform_frequency`:
 
