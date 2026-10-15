@@ -14,7 +14,7 @@ raw_header = ""
     #            CHANGE            #
     #                              #
     ################################
-FILENAME = "results/waveforms/pure_silica/AC_frequency_dependence_3_1/AC_frequency_dependence_ps_1000_max008.txt"
+FILENAME = "results/waveforms/pure_silica/AC_frequency_dependence_3_1/AC_frequency_dependence_ps_6000_max002.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found")
@@ -44,8 +44,8 @@ else:
     #            CHANGE            #
     #                              #
     ################################
-    
-    mask = (time_array >= 0.008) & (time_array <= 0.03)
+    mask = (time_array >= 0)
+    mask = (time_array >= 0.002) & (time_array <= 0.0045)
 
     time_array = time_array[mask]
     voltage_array = voltage_array[mask]
@@ -78,7 +78,7 @@ else:
     A_guess, B_guess, C, D_guess, E_guess, F_guess, G_guess = curve_fitter.fit_waveform_frequency(
         time_array=time_array,
         voltage_array=voltage_array,
-        estimated_chi2=0.15e-12,
+        estimated_chi2=0.3e-12,
         max_harmonic=max_harmonic,
         search_radius_hz=search_radius_hz,
         min_C=0.3
@@ -164,16 +164,16 @@ else:
     #                              #
     ################################
     tolerances = {
-        "A": 0.05,                  # ±5% of guessed fringe amplitude
-        "B": 0.05,                  # ±5% of piezo angular frequency
-        "C": 0.20,                  # ±20% of frequency-domain C guess
+        "A": 0.01,                  # ±5% of guessed fringe amplitude
+        "B": 0.50,                  # ±5% of piezo angular frequency
+        "C": 0.880,                  # ±20% of frequency-domain C guess
         "D": 0.05,                  # ±5% of AC angular frequency
         "E": total_time_span / 2.0,  # Absolute time phase shift limit (sec)
         "F": 1.0 / ac_frequency,    # Absolute phase limit within 1 AC cycle (sec)
         "G": 0.25                   # ±25% of DC voltage offset bound
     }
 
-    C_guess = C 
+    C_guess = C
 
     p0_time = [A_guess, B_guess, C_guess, D_guess, E_guess, F_guess, G_guess]
 
@@ -212,7 +212,7 @@ else:
         chi2 = curve_fitter.get_chi2(C) * 1e12
         print("\nJoint time domain fit succeeded with relaxed C and bounded parameters:")
         print(f"  A={A:.4f}, B={B:.4f}, C={C:.4f}, D={D:.4f}, E={E:.6f}, F={F:.6f}, G={G:.4f}")
-        print(f"Chi(2)     : {chi2:.6f}")
+        print(f"Chi(2)     : {chi2}")
 
     except Exception as e:
         print(f"\nJoint time domain fit failed: {e}. Falling back to initial guesses.")
