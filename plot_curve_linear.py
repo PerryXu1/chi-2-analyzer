@@ -10,7 +10,7 @@ UPPER_FREQ = 6000
 MIN_PROMINENCE = 0.05
 MIN_DISTANCE = 3
 
-csv_file_path = "results/data/Chi2_vs_AC_frequency_pure_silica_3_1.csv"
+csv_file_path = "results/data/Chi2_vs_AC_frequency_pure_silica_1_3.csv"
 
 df = pd.read_csv(csv_file_path)
 
