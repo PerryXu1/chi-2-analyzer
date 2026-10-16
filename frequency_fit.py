@@ -14,7 +14,7 @@ raw_header = ""
     #            CHANGE            #
     #                              #
     ################################
-FILENAME = "results/waveforms/pure_silica/AC_frequency_dependence_3_1/AC_frequency_dependence_ps_6000_max002.txt"
+FILENAME = "results/waveforms/pure_silica/AC_frequency_dependence_2_1/AC_frequency_dependence_ps_3000_max002.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found")
@@ -45,7 +45,7 @@ else:
     #                              #
     ################################
     mask = (time_array >= 0)
-    mask = (time_array >= 0.002) & (time_array <= 0.0045)
+    mask = (time_array >= 0.0035) & (time_array <= 0.01)
 
     time_array = time_array[mask]
     voltage_array = voltage_array[mask]
@@ -166,7 +166,7 @@ else:
     tolerances = {
         "A": 0.01,                  # ±5% of guessed fringe amplitude
         "B": 0.50,                  # ±5% of piezo angular frequency
-        "C": 0.880,                  # ±20% of frequency-domain C guess
+        "C": 0.85,                  # ±20% of frequency-domain C guess
         "D": 0.05,                  # ±5% of AC angular frequency
         "E": total_time_span / 2.0,  # Absolute time phase shift limit (sec)
         "F": 1.0 / ac_frequency,    # Absolute phase limit within 1 AC cycle (sec)

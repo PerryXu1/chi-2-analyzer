@@ -39,8 +39,8 @@ class FiberGUIAppPyQt(QMainWindow):
         self.setWindowTitle("Optical Fiber Characterization GUI (Full-Width Default)")
         self.resize(1450, 850)
 
-        self.base_dir = "results/waveforms/pure_silica/AC_frequency_dependence_1_3"
-        self.csv_record_path = "results/data/Chi2_vs_AC_frequency_pure_silica_1_3.csv"
+        self.base_dir = "results/waveforms/AC_frequency_dependence_4"
+        self.csv_record_path = "results/data/Chi2_vs_AC_frequency_tungsten_2.csv"
 
         self.frequencies, self.shots_map = self.scan_data_files()
 
@@ -73,7 +73,7 @@ class FiberGUIAppPyQt(QMainWindow):
         self.load_current_file()
 
     def scan_data_files(self):
-        pattern = os.path.join(self.base_dir, "AC_frequency_dependence_ps_*_max*.txt")
+        pattern = os.path.join(self.base_dir, "AC_frequency_dependence_*_max*.txt")
         files = glob.glob(pattern)
 
         freq_set = set()
@@ -81,7 +81,7 @@ class FiberGUIAppPyQt(QMainWindow):
 
         for f in files:
             basename = os.path.basename(f)
-            match = re.search(r"AC_frequency_dependence_ps_(\d+)_max(\d+)\.txt", basename)
+            match = re.search(r"AC_frequency_dependence_(\d+)_max(\d+)\.txt", basename)
             if match:
                 freq = int(match.group(1))
                 shot = int(match.group(2))
@@ -107,7 +107,7 @@ class FiberGUIAppPyQt(QMainWindow):
         if self.shot_idx >= len(available_shots):
             self.shot_idx = 0
         shot = available_shots[self.shot_idx]
-        return os.path.join(self.base_dir, f"AC_frequency_dependence_ps_{freq}_max{shot:03d}.txt")
+        return os.path.join(self.base_dir, f"AC_frequency_dependence_{freq}_max{shot:03d}.txt")
 
     def snap_to_step(self, val):
         step = 0.0005
@@ -146,7 +146,7 @@ class FiberGUIAppPyQt(QMainWindow):
         sidebar_layout.addWidget(freq_group)
 
         # --- 2. Shot Selector ---
-        shot_group = QGroupBox("Shot Number (Wraps 29->30->1)")
+        shot_group = QGroupBox("Shot Number")
         shot_layout = QHBoxLayout(shot_group)
         self.btn_prev_shot = QPushButton("<")
         self.btn_prev_shot.clicked.connect(self.prev_shot)
