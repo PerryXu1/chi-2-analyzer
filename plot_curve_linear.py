@@ -6,11 +6,11 @@ from scipy.optimize import curve_fit
 from scipy.signal import find_peaks
 
 LOWER_FREQ = 200
-UPPER_FREQ = 6000
+UPPER_FREQ = 1000
 MIN_PROMINENCE = 0.05
 MIN_DISTANCE = 3
 
-csv_file_path = "results/data/Chi2_vs_AC_frequency_pure_silica_1_3.csv"
+csv_file_path = "results/data/Chi2_vs_AC_frequency_pure_silica_3_1.csv"
 
 df = pd.read_csv(csv_file_path)
 
@@ -80,13 +80,13 @@ x_smooth = np.linspace(min(x_data), max(x_data), 500)
 y_smooth = exp_decay_model(x_smooth, *popt)
 
 plt.figure(figsize=(8, 5))
-plt.scatter(
+plt.plot(
     x_data,
     y_data,
     marker="o",
-    # linestyle="-",
+    linestyle="-",
     color="tab:blue",
-    # markersize=6,
+    markersize=6,
     label="Experimental Data",
 )
 plt.xlim(LOWER_FREQ, UPPER_FREQ)
@@ -99,14 +99,14 @@ plt.xlim(LOWER_FREQ, UPPER_FREQ)
 #     label=f"Exp Decay Fit ($R^2 = {r_squared:.4f}$)",
 # )
 
-# for i, freq in enumerate(peak_frequencies):
-#     plt.axvline(
-#         x=freq,
-#         color="green",
-#         linestyle="--",
-#         linewidth=1.2,
-#         label="Detected Peaks" if i == 0 else "",
-#     )
+for i, freq in enumerate(peak_frequencies):
+    plt.axvline(
+        x=freq,
+        color="green",
+        linestyle="--",
+        linewidth=1.2,
+        label="Detected Peaks" if i == 0 else "",
+    )
 
 plt.xlabel("AC Frequency (Hz)", fontsize=11)
 plt.ylabel("Max Chi(2)", fontsize=11)
