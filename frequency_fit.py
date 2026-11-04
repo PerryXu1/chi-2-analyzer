@@ -14,7 +14,7 @@ raw_header = ""
     #            CHANGE            #
     #                              #
     ################################
-FILENAME = "results/waveforms/pure_silica/AC_frequency_dependence_2_1/AC_frequency_dependence_ps_3000_max002.txt"
+FILENAME = "results/waveforms/AC_frequency_dependence_iron_2/frequency_dependence_iron_2000_max001.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found")
@@ -45,7 +45,7 @@ else:
     #                              #
     ################################
     mask = (time_array >= 0)
-    mask = (time_array >= 0.0035) & (time_array <= 0.01)
+    # mask = (time_array >= 0.01) & (time_array <= 0.035)
 
     time_array = time_array[mask]
     voltage_array = voltage_array[mask]

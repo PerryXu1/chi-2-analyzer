@@ -4,7 +4,7 @@ import re
 import matplotlib.pyplot as plt
 import numpy as np
 
-file_pattern = "results/waveforms/AC_frequency_dependence_3/frequency_dependence_tungsten_1000_max*.txt"
+file_pattern = "results/waveforms/potential_mode_mismatch/potential_mode_mismatch_min_nopiezo_10_3000_*.txt"
 filenames = glob.glob(file_pattern)
 
 
