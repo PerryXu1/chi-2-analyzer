@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import curve_fit
 
-CSV_FILE = "results/chi2/chi2_frequency_response.csv"
+CSV_FILE = "results/data/Chi2_vs_AC_frequency_tungsten_3_undershot.csv"
 df = pd.read_csv(CSV_FILE)
 
 frequency = df["Frequency"].values

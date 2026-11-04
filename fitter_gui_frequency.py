@@ -39,8 +39,8 @@ class FiberGUIAppPyQt(QMainWindow):
         self.setWindowTitle("Optical Fiber Characterization GUI (Full-Width Default)")
         self.resize(1450, 850)
 
-        self.base_dir = "results/waveforms/AC_frequency_dependence_4"
-        self.csv_record_path = "results/data/Chi2_vs_AC_frequency_tungsten_2.csv"
+        self.base_dir = "results/waveforms/AC_frequency_dependence_5_undershot"
+        self.csv_record_path = "results/data/Chi2_vs_AC_frequency_tungsten_3_undershot.csv"
 
         self.frequencies, self.shots_map = self.scan_data_files()
 
@@ -635,8 +635,8 @@ class FiberGUIAppPyQt(QMainWindow):
                 curve_fitter = CurveFitter(
                     poled_fiber_length=0.3,
                     core_index=1.45,
-                    effective_distance=31e-6,
-                    field_adjustment_factor=2.0486,
+                    effective_distance=41.1e-6,
+                    field_adjustment_factor=1.77377708245,
                     periods_per_piezo_cycle=2.5,
                     piezo_frequency=self.piezo_frequency,
                     ac_voltage=self.ac_voltage,
