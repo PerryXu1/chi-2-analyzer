@@ -39,6 +39,7 @@ VOLTS_PER_DIV = 24e-3
 #     return int(round(A * (1 - np.exp(-frequency / TAU)) + INITIAL_VALUE))
 
 def voltage_function(frequency: float) -> int:
+   # return 10
     if 0 <= frequency < 500:
         return 3
     elif 500 <= frequency < 1000:
@@ -115,7 +116,7 @@ try:
         
         for shot in range(SHOTS):
             # CHANGE
-            filename = f"AC_frequency_dependence_ps_{ac_frequency:01d}_max{shot + 1:03d}.txt"
+            filename = f"AC_frequency_dependence_{ac_frequency:01d}_max{shot + 1:03d}.txt"
 
             time, voltage = scope.acquire_signal(channel=2)
 
