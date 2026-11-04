@@ -7,20 +7,20 @@ import time as tm
 # ========== CONSTANTS ==========
 WAVELENGTH = 1550e-9
 POLED_LENGTH = 0.3
-EFFECTIVE_DISTANCE = 31e-6
+EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
 
 ELECTRODE_MATERIAL = "TUNGSTEN"
-TIME = 35
-POLING_VOLTAGE = 3700
+TIME = 12
+POLING_VOLTAGE = 4500
 FREQUENCY_RATIO = 50 # AC_FREQUENCY / PIEZO_FREQUENCY
 
 SHOT_DELAY = 0.5
 VOLTAGE_MEASUREMENT_DELAY = 3
 
 # ========== CHANGE ==========
-SHOTS = 30
-VOLTS_PER_DIV = 12e-3
+SHOTS = 20
+VOLTS_PER_DIV = 24e-3
 
 # VOLTAGE FUNCTION
 # TAU = 1500
@@ -40,11 +40,11 @@ VOLTS_PER_DIV = 12e-3
 
 def voltage_function(frequency: float) -> int:
     if 0 <= frequency < 500:
-        return 2
+        return 3
     elif 500 <= frequency < 1000:
-       return 2
-    elif 1000 <= frequency < 1500:
        return 3
+    elif 1000 <= frequency < 1500:
+       return 4
     elif 1500 <= frequency < 2000:
        return 4
     elif 2000 <= frequency < 2500:
@@ -58,11 +58,11 @@ def voltage_function(frequency: float) -> int:
     elif 4000 <= frequency < 4500:
        return 5
     elif 4500 <= frequency < 5000:
-       return 5
+       return 6
     elif 5000 <= frequency < 5500:
-       return 5
+       return 6
     elif 5500 <= frequency <= 6000:
-       return 5
+       return 6
 
 ac_frequencies = list(range(200, 501, 10)) + list(range(525, 1001, 25)) + list(range(1050, 6001, 50))
 
@@ -108,7 +108,7 @@ try:
         scope.set_screen(channel=2,
                     volts_per_div=VOLTS_PER_DIV,
                     time_per_div=TIME_PER_DIV,
-                    vertical_offset=3.5 * VOLTS_PER_DIV,
+                    vertical_offset=3 * VOLTS_PER_DIV,
                     horizontal_offset=5 * TIME_PER_DIV,
                     trigger_level=0,
                     ext_trigger=True)
@@ -120,7 +120,7 @@ try:
             time, voltage = scope.acquire_signal(channel=2)
 
             header_info = (
-                f"PURE SILICA, ELECTRODE={ELECTRODE_MATERIAL}, TIME={TIME}, POLING_VOLTAGE={POLING_VOLTAGE}, "
+                f"WUHAN, ELECTRODE={ELECTRODE_MATERIAL}, TIME={TIME}, POLING_VOLTAGE={POLING_VOLTAGE}, "
                 f"WAVELENGTH={WAVELENGTH}, EFFECTIVE_DISTANCE={EFFECTIVE_DISTANCE}, "
                 f"POLED_LENGTH={POLED_LENGTH}, CORE_INDEX={CORE_INDEX}, "
                 f"POLE=MAX, AC_VOLTAGE={measured_ac_voltage}, AC_FREQUENCY={ac_frequency}, PIEZO_FREQUENCY={piezo_frequency}\n"

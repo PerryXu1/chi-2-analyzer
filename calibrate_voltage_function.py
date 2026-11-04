@@ -6,23 +6,23 @@ from classes.interface import HP54600B, Agilent33120A, Agilent33250A, WaveformSh
 # ========== CONSTANTS ==========
 WAVELENGTH = 1550e-9
 POLED_LENGTH = 0.3
-EFFECTIVE_DISTANCE = 31e-6
+EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
 
 ELECTRODE_MATERIAL = "TUNGSTEN"
-TIME = 35
-POLING_VOLTAGE = 3700
+TIME = 12
+POLING_VOLTAGE = 4500
 FREQUENCY_RATIO = 50  # AC_FREQUENCY / PIEZO_FREQUENCY
 
 SHOT_DELAY = 0.5
 VOLTAGE_MEASUREMENT_DELAY = 3
 
 SHOTS = 5
-VOLTS_PER_DIV = 10e-3
+VOLTS_PER_DIV = 24e-3
 
 ac_frequencies = list(range(250, 6000, 500))
 # ac_frequencies = [1000]
-ac_voltages = list(range(5, 11))
+ac_voltages = list(range(4, 11))
 # ac_voltages = [4]
 
 
