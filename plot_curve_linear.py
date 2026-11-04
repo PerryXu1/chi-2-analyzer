@@ -6,8 +6,8 @@ from scipy.optimize import curve_fit
 from scipy.signal import find_peaks
 
 LOWER_FREQ = 200
-UPPER_FREQ = 6000
-MIN_PROMINENCE = 0.05
+UPPER_FREQ = 1000
+MIN_PROMINENCE = 0.15
 MIN_DISTANCE = 3
 
 csv_file_path = "results/data/Chi2_vs_AC_frequency_tungsten_3_undershot.csv"
@@ -76,6 +76,7 @@ if len(peak_spacings) > 0:
 else:
     print("Fewer than 2 peaks detected; cannot compute spacings.")
 
+print(peak_frequencies)
 x_smooth = np.linspace(min(x_data), max(x_data), 500)
 y_smooth = exp_decay_model(x_smooth, *popt)
 
@@ -99,14 +100,14 @@ plt.xlim(LOWER_FREQ, UPPER_FREQ)
 #     label=f"Exp Decay Fit ($R^2 = {r_squared:.4f}$)",
 # )
 
-# for i, freq in enumerate(peak_frequencies):
-#     plt.axvline(
-#         x=freq,
-#         color="green",
-#         linestyle="--",
-#         linewidth=1.2,
-#         label="Detected Peaks" if i == 0 else "",
-#     )
+for i, freq in enumerate(peak_frequencies):
+    plt.axvline(
+        x=freq,
+        color="green",
+        linestyle="--",
+        linewidth=1.2,
+        label="Detected Peaks" if i == 0 else "",
+    )
 
 plt.xlabel("AC Frequency (Hz)", fontsize=11)
 plt.ylabel("Max Chi(2)", fontsize=11)
