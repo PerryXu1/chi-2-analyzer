@@ -11,7 +11,7 @@ EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
 
 ELECTRODE_MATERIAL = "TUNGSTEN"
-TIME = 12
+TIME = 22
 POLING_VOLTAGE = 4500
 FREQUENCY_RATIO = 50 # AC_FREQUENCY / PIEZO_FREQUENCY
 
@@ -20,7 +20,7 @@ VOLTAGE_MEASUREMENT_DELAY = 3
 
 # ========== CHANGE ==========
 SHOTS = 20
-VOLTS_PER_DIV = 24e-3
+VOLTS_PER_DIV = 10e-3
 
 # VOLTAGE FUNCTION
 # TAU = 1500
@@ -43,27 +43,27 @@ def voltage_function(frequency: float) -> int:
    if 0 <= frequency < 500:
       return 3
    elif 500 <= frequency < 1000:
-      return 3
+      return 4
    elif 1000 <= frequency < 1500:
       return 4
    elif 1500 <= frequency < 2000:
-      return 4
+      return 5
    elif 2000 <= frequency < 2500:
-      return 4
+      return 5
    elif 2500 <= frequency < 3000:
-      return 4
+      return 5
    elif 3000 <= frequency < 3500:
       return 5
    elif 3500 <= frequency < 4000:
-      return 5
+      return 6
    elif 4000 <= frequency < 4500:
-      return 5
+      return 6
    elif 4500 <= frequency < 5000:
       return 6
    elif 5000 <= frequency < 5500:
-      return 6
+      return 7
    elif 5500 <= frequency <= 6000:
-      return 6
+      return 7
 
 ac_frequencies = list(range(200, 501, 10)) + list(range(525, 1001, 25)) + list(range(1050, 6001, 50))
 
