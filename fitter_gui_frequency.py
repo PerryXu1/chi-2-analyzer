@@ -39,8 +39,8 @@ class FiberGUIAppPyQt(QMainWindow):
         self.setWindowTitle("Optical Fiber Characterization GUI (Full-Width Default)")
         self.resize(1450, 850)
 
-        self.base_dir = "results/waveforms/AC_frequency_dependence_5_undershot"
-        self.csv_record_path = "results/data/Chi2_vs_AC_frequency_tungsten_3_undershot.csv"
+        self.base_dir = "results/waveforms/AC_frequency_dependence_8_22m"
+        self.csv_record_path = "results/data/Chi2_vs_AC_frequency_tungsten_5_22m.csv"
 
         self.frequencies, self.shots_map = self.scan_data_files()
 

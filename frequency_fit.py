@@ -14,7 +14,7 @@ raw_header = ""
     #            CHANGE            #
     #                              #
     ################################
-FILENAME = "results/waveforms/AC_frequency_dependence_iron_2/frequency_dependence_iron_2000_max001.txt"
+FILENAME = "AC_frequency_dependence_1000_max001.txt"
 
 if not os.path.exists(FILENAME):
     print(f"Error: '{FILENAME}' not found")
@@ -45,7 +45,7 @@ else:
     #                              #
     ################################
     mask = (time_array >= 0)
-    # mask = (time_array >= 0.01) & (time_array <= 0.035)
+    mask = (time_array >= 0.005) & (time_array <= 0.022)
 
     time_array = time_array[mask]
     voltage_array = voltage_array[mask]
@@ -53,8 +53,8 @@ else:
     curve_fitter = CurveFitter(
         poled_fiber_length=0.3,
         core_index=1.45,
-        effective_distance=31e-6,
-        field_adjustment_factor=2.0486,
+        effective_distance=41.1e-6,
+        field_adjustment_factor=1.77377708245,
         periods_per_piezo_cycle=2.5,
         piezo_frequency=piezo_frequency,
         ac_voltage=ac_voltage,

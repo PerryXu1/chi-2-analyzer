@@ -9,16 +9,16 @@ POLED_LENGTH = 0.3
 EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
 
-ELECTRODE_MATERIAL = "TUNGSTEN"
-TIME = 22
-POLING_VOLTAGE = 4500
+ELECTRODE_MATERIAL = "PRIA"
+TIME = 20
+POLING_VOLTAGE = 6000
 FREQUENCY_RATIO = 50  # AC_FREQUENCY / PIEZO_FREQUENCY
 
 SHOT_DELAY = 0.5
 VOLTAGE_MEASUREMENT_DELAY = 3
 
 SHOTS = 5
-VOLTS_PER_DIV = 10e-3
+VOLTS_PER_DIV = 500e-3
 
 ac_frequencies = list(range(250, 6000, 500))
 # ac_frequencies = [1000]
@@ -86,7 +86,7 @@ try:
                 time_data, voltage_data = scope.acquire_signal(channel=2)
 
                 header_info = (
-                    f"PURE SILICA, ELECTRODE={ELECTRODE_MATERIAL}, TIME={TIME}, POLING_VOLTAGE={POLING_VOLTAGE}, "
+                    f"SOUTHAMPTON, ELECTRODE={ELECTRODE_MATERIAL}, TIME={TIME}, POLING_VOLTAGE={POLING_VOLTAGE}, "
                     f"WAVELENGTH={WAVELENGTH}, EFFECTIVE_DISTANCE={EFFECTIVE_DISTANCE}, "
                     f"POLED_LENGTH={POLED_LENGTH}, CORE_INDEX={CORE_INDEX}, "
                     f"POLE=MAX, AC_VOLTAGE={measured_ac_voltage}, AC_FREQUENCY={ac_frequency}, PIEZO_FREQUENCY={piezo_frequency}\n"

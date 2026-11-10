@@ -8,7 +8,7 @@ LOWER_FREQ = 200
 UPPER_FREQ = 6000
 FIT_THRESHOLD = 1000  # Fit curve only for frequencies >= 1000 Hz
 
-csv_file_path = "results/data/Chi2_vs_AC_frequency_pure_silica_3_1.csv"
+csv_file_path = "results/data/Chi2_vs_AC_frequency_tungsten_5_22m.csv"
 
 if not os.path.exists(csv_file_path):
     csv_file_path = "Chi2_vs_AC_frequency_pure_silica_3_1.csv"  # Fallback to root path
