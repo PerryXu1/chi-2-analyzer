@@ -6,13 +6,13 @@ import time as tm
 
 # ========== CONSTANTS ==========
 WAVELENGTH = 1550e-9
-POLED_LENGTH = 0.3
+POLED_LENGTH = 0.25
 EFFECTIVE_DISTANCE = 41.1e-6
 CORE_INDEX = 1.45
 
-ELECTRODE_MATERIAL = "TUNGSTEN"
-TIME = 22
-POLING_VOLTAGE = 4500
+ELECTRODE_MATERIAL = "PRIA"
+TIME = 20
+POLING_VOLTAGE = 6000
 FREQUENCY_RATIO = 50 # AC_FREQUENCY / PIEZO_FREQUENCY
 
 SHOT_DELAY = 0.5
@@ -20,7 +20,7 @@ VOLTAGE_MEASUREMENT_DELAY = 3
 
 # ========== CHANGE ==========
 SHOTS = 20
-VOLTS_PER_DIV = 10e-3
+VOLTS_PER_DIV = 300e-3
 
 # VOLTAGE FUNCTION
 # TAU = 1500
@@ -41,7 +41,7 @@ VOLTS_PER_DIV = 10e-3
 def voltage_function(frequency: float) -> int:
    # return 10
    if 0 <= frequency < 500:
-      return 3
+      return 4
    elif 500 <= frequency < 1000:
       return 4
    elif 1000 <= frequency < 1500:
@@ -53,17 +53,17 @@ def voltage_function(frequency: float) -> int:
    elif 2500 <= frequency < 3000:
       return 5
    elif 3000 <= frequency < 3500:
-      return 5
+      return 6
    elif 3500 <= frequency < 4000:
       return 6
    elif 4000 <= frequency < 4500:
-      return 6
+      return 7
    elif 4500 <= frequency < 5000:
-      return 6
+      return 7
    elif 5000 <= frequency < 5500:
       return 7
    elif 5500 <= frequency <= 6000:
-      return 7
+      return 8
 
 ac_frequencies = list(range(200, 501, 10)) + list(range(525, 1001, 25)) + list(range(1050, 6001, 50))
 
@@ -121,7 +121,7 @@ try:
             time, voltage = scope.acquire_signal(channel=2)
 
             header_info = (
-                f"WUHAN, ELECTRODE={ELECTRODE_MATERIAL}, TIME={TIME}, POLING_VOLTAGE={POLING_VOLTAGE}, "
+                f"SOUTHAMPTON, ELECTRODE={ELECTRODE_MATERIAL}, TIME={TIME}, POLING_VOLTAGE={POLING_VOLTAGE}, "
                 f"WAVELENGTH={WAVELENGTH}, EFFECTIVE_DISTANCE={EFFECTIVE_DISTANCE}, "
                 f"POLED_LENGTH={POLED_LENGTH}, CORE_INDEX={CORE_INDEX}, "
                 f"POLE=MAX, AC_VOLTAGE={measured_ac_voltage}, AC_FREQUENCY={ac_frequency}, PIEZO_FREQUENCY={piezo_frequency}\n"
